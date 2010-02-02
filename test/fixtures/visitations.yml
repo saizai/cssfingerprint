@@ -1,0 +1,11 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  scraping_id: 1
+  url_id: 1
+  visited: false
+
+two:
+  scraping_id: 1
+  url_id: 1
+  visited: false

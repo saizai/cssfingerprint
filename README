@@ -1,0 +1,5 @@
+CSS Fingerprint is a research project inspired by the EFF's Panopticlick.
+
+Its intent is to see how well the CSS history hack can be used with AI techniques (like an SVM) to uniquely fingerprint users despite changes in their browsing history, even on new computers or new browsers.
+
+At the moment, the AI component is not yet active, pending data collected from preliminary testing.

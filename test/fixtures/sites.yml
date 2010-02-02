@@ -1,0 +1,11 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  url: MyString
+  alexa_rank: 1
+  total_visitors: 1
+
+two:
+  url: MyString
+  alexa_rank: 1
+  total_visitors: 1

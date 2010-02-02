@@ -1,0 +1,4 @@
+<%= remote_function :url => visitations_url(:start_time => @start_time, :limit => @limit, :offset => @offset, :scraping_id => @scraping.id, :batch_start => Time.now ), :method => :post, 
+		:with => "'results=' + JSON.stringify(CSSHistory.check_batch(#{@sites.map(&:url).to_json}))",
+		:loading => update_page {|page| page['status'].replace_html "Testing sites #{@offset + 1} through #{@limit+@offset+1}..."}
+%>

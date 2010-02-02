@@ -1,0 +1,42 @@
+<p>CSS Fingerprint is a research project inspired by the EFF's <a href="http://panopticlick.com">Panopticlick</a>.</p>
+
+<p>Its intent is to see how well the <a href="http://ha.ckers.org/weird/CSS-history-hack.html">CSS history hack</a> can be used with AI techniques (like an SVM) to uniquely fingerprint users
+despite changes in their browsing history, even on new computers or new browsers.</p>
+
+<p>At the moment, the AI component is not yet active. In order to write it, I need data.</p>
+
+<p>To help out, please enter some unique string below. It will be used as a cookie value to identify you when you come back.</p>
+
+<p>It would especially help if you visit again after a while, or with a different browser/computer whose browsing history you are mostly responsible for, 
+and enter the SAME string again so that I can see how one person's browser histories vary.</p>
+
+<p>This will take 30 seconds, and end in a status message saying it's done.</p>
+
+<p>Thanks!</p>
+
+<p>- <A href="http://saizai.com">Sai Emrys</A></p>
+
+<div style="margin:1em;">
+	<% form_remote_tag(:url => scrapings_url(:start_time => Time.now), :method => :post,
+							:loading => update_page {|page| page['status'].replace_html "Sending first batch..." }) do %>
+		<p>Enter something unique to you (not a password): <%= text_field_tag :cookie, cookies[:remember_token] %>
+		<%= submit_tag "Fingerprint me" %></p>
+		<p>Please change this to be something you can remember, so you can enter it again from a different browser/computer.</p>
+	<% end %>
+	
+	<div id="status">Not yet started...</div>
+</div>
+
+<small>
+	<p>For my fellow geeks:</p>
+	
+	<p>What I store is the cookie value you submit and, for each of the top ~2-14k Alexa sites (depending on your CPU and internet speed), whether or not you have visited that site.</p>
+	
+	<p>I make no attempt to find out who you are personally, and I don't store your IP; the point of this is simply to tell whether I can automatically identify when you visit again with a different browser.</p>
+	
+	<p>The data will not be shared with anyone except other EFF-friendly researchers who agree to keep it confidential.</p>
+	
+	<p>The source code is available at <A href="http://github.com/saizai/cssfingerprint">github</A>. Commits welcome.</p>
+	
+	<p>Please do not slashdot this just yet, as it's not ready for the traffic.</p>
+</small>
