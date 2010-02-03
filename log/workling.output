@@ -1,0 +1,69 @@
+=> Loading Rails...
+** Rails loaded.
+** Starting Workling::Remote::Invokers::ThreadedPoller...
+** Use CTRL-C to stop.
+** Exiting
+/Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/lib/workling/clients/memcache_queue_client.rb:68:in `raise_unless_connected!': config/workling.yml configured to connect to queue server on localhost:22122 for this environment. could not connect to queue server on this host:port. for starling users: pass starling the port with -p flag when starting it. If you don't want to use Starling, then explicitly set Workling::Remote.dispatcher (see README for an example) (Workling::QueueserverNotFoundError)
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `join'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `listen'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `each'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `listen'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/listen.rb:24
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/application.rb:176:in `load'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/application.rb:176:in `start_load'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/application.rb:257:in `start'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/controller.rb:69:in `run'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons.rb:139:in `run'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/cmdline.rb:105:in `call'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/cmdline.rb:105:in `catch_exceptions'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons.rb:138:in `run'
+	from script/workling_client:17
+=> Loading Rails...
+** Rails loaded.
+** Starting Workling::Remote::Invokers::ThreadedPoller...
+** Use CTRL-C to stop.
+** Exiting
+/Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/lib/workling/clients/memcache_queue_client.rb:68:in `raise_unless_connected!': config/workling.yml configured to connect to queue server on localhost:22122 for this environment. could not connect to queue server on this host:port. for starling users: pass starling the port with -p flag when starting it. If you don't want to use Starling, then explicitly set Workling::Remote.dispatcher (see README for an example) (Workling::QueueserverNotFoundError)
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `join'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `listen'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `each'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `listen'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/listen.rb:24
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/application.rb:176:in `load'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/application.rb:176:in `start_load'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/application.rb:257:in `start'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/controller.rb:69:in `run'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons.rb:139:in `run'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/cmdline.rb:105:in `call'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/cmdline.rb:105:in `catch_exceptions'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons.rb:138:in `run'
+	from script/workling_client:17
+=> Loading Rails...
+** Rails loaded.
+** Starting Workling::Remote::Invokers::ThreadedPoller...
+** Use CTRL-C to stop.
+** Exiting
+/Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/lib/workling/clients/memcache_queue_client.rb:68:in `raise_unless_connected!': config/workling.yml configured to connect to queue server on localhost:22122 for this environment. could not connect to queue server on this host:port. for starling users: pass starling the port with -p flag when starting it. If you don't want to use Starling, then explicitly set Workling::Remote.dispatcher (see README for an example) (Workling::QueueserverNotFoundError)
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `join'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `listen'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `each'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/../lib/workling/remote/invokers/threaded_poller.rb:37:in `listen'
+	from /Users/saizai/Dropbox/workspace/historyprint/vendor/plugins/workling/script/listen.rb:24
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/application.rb:176:in `load'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/application.rb:176:in `start_load'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/application.rb:257:in `start'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/controller.rb:69:in `run'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons.rb:139:in `run'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/cmdline.rb:105:in `call'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons/cmdline.rb:105:in `catch_exceptions'
+	from /opt/local/lib/ruby/gems/1.8/gems/daemons-1.0.10/lib/daemons.rb:138:in `run'
+	from script/workling_client:17
+=> Loading Rails...
+** Rails loaded.
+** Starting Workling::Remote::Invokers::ThreadedPoller...
+** Use CTRL-C to stop.
+** Exiting
+=> Loading Rails...
+** Rails loaded.
+** Starting Workling::Remote::Invokers::ThreadedPoller...
+** Use CTRL-C to stop.
