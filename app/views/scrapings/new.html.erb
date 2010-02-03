@@ -5,10 +5,7 @@ despite changes in their browsing history, even on new computers or new browsers
 
 <p>At the moment, the AI component is not yet active. In order to write it, I need data.</p>
 
-<p>To help out, please enter some unique string below. It will be used as a cookie value to identify you when you come back.</p>
-
-<p>It would especially help if you visit again after a while, or with a different browser/computer whose browsing history you are mostly responsible for, 
-and enter the SAME string again so that I can see how one person's browser histories vary.</p>
+<p>To help out, please visit this site from multiple different browsers / computers that you own, using the same input each time.</p>
 
 <p>This will take 30 seconds, and end in a status message saying it's done.</p>
 
@@ -21,10 +18,12 @@ and enter the SAME string again so that I can see how one person's browser histo
 							:loading => update_page {|page| page['status'].replace_html "Sending first batch..." }) do %>
 		<p>Enter something unique to you (not a password): <%= text_field_tag :cookie, cookies[:remember_token] %>
 		<%= submit_tag "Fingerprint me" %></p>
-		<p>Please change this to be something you can remember, so you can enter it again from a different browser/computer.</p>
+		<p>Please change this to be something you can remember, so you can enter it again from a different browser/computer.</p><br/>
+		<p>What should happen is that when you hit the submit button, you'll see "Testing sites 1 through 201...", increasing rapidly 200 at a time.<br/>
+			If you get <1000 URLs scraped, or it otherwise behaves oddly, please reload and resubmit. If that doesn't fix it, please IM me ASAP (AIM saizai) so I can debug it. Thanks!</p>
 	<% end %>
 	
-	<div id="status">Not yet started...</div>
+	<div id="status" style="color: red">Not yet started...</div>
 </div>
 
 <small>
@@ -37,6 +36,15 @@ and enter the SAME string again so that I can see how one person's browser histo
 	<p>The data will not be shared with anyone except other EFF-friendly researchers who agree to keep it confidential.</p>
 	
 	<p>The source code is available at <A href="http://github.com/saizai/cssfingerprint">github</A>. Commits welcome.</p>
+	
+	<p>How it works:
+		<ol>
+			<li>scrape Alexa's 1M top sites list once per day, insert in db</li>
+			<li>when form is submitted, find/create a user for the cookie, execute the result</li>
+			<li>form result is code to test a given batch and fetch the next one</li>
+			<li>server cuts off client after 30 seconds, processes all the data in the background to speed things up</li>
+		</ol>
+	</p>
 	
 	<p>Please do not slashdot this just yet, as it's not ready for the traffic.</p>
 </small>

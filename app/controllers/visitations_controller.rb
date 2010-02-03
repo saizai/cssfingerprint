@@ -9,9 +9,9 @@ class VisitationsController < ApplicationController
       p "Last batch took #{Time.now - batch_start} seconds roundtrip" # TODO: modify batch size dynamically
       @offset += @limit
       @sites = Site.find(:all, :order => 'alexa_rank', :limit => @limit, :offset => @offset)
-      render '/visitations/new'
+      render '/visitations/new.js.erb'
     else
-      render '/scrapings/analyze'
+      render '/scrapings/analyze.js.erb'
     end
   end
   

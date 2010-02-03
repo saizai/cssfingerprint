@@ -7,7 +7,7 @@ class ScrapingsController < ApplicationController
     @sites = Site.find(:all, :order => 'alexa_rank', :limit => @limit, :offset => @offset)
     @start_time = params[:start_time]
     
-    render '/visitations/new'
+    render '/visitations/new.js.erb'
   end
 
 end
