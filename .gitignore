@@ -9,6 +9,6 @@ db/schema.rb
 config/initializers/*_keys.rb
 .tmp*
 public/files/
-public/javascripts/all.js
-public/stylesheets/all.css
+public/javascripts/all*.js
+public/stylesheets/all*.css
 config/mail.yml
