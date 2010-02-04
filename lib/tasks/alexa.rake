@@ -19,7 +19,7 @@ namespace :alexa do
   
   desc "Warm up the database"
   task :warm_db => :environment do
-    5000.times{|i| Site.find(:all, :order => 'alexa_rank', :limit => 500, :offset => 500 * i) } # This needs to be kept in sync with VisitationsController#create
+    100.times{|i| Site.find(:all, :order => 'alexa_rank', :limit => 500, :offset => 500 * i) } # This needs to be kept in sync with VisitationsController#create
     true
   end
 end

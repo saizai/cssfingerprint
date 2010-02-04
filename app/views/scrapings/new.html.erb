@@ -28,8 +28,8 @@ despite changes in their browsing history, even on new computers or new browsers
 		<p>Enter something unique to you (not a password): <%= text_field_tag :cookie, cookies[:remember_token] %>
 		<%= submit_tag "Fingerprint me", :disabled => true %></p>
 		<p>Please change this to be something you can remember, so you can enter it again from a different browser/computer.</p><br/>
-		<p>What should happen is that when you hit the submit button, you'll see "Testing sites 1 through 501...", increasing rapidly 500 at a time.<br/>
-			If you get <1000 URLs scraped, or it otherwise behaves oddly, please reload and resubmit. If that doesn't fix it, please IM me ASAP (AIM saizai) so I can debug it. Thanks!</p>
+		<p>What should happen is that when you hit the submit button, you'll see "Testing sites 1 through 501...", increasing rapidly 500 at a time, ending with a "Done!" message.</p>
+		<p>If you get <1000 URLs scraped, or it otherwise behaves oddly, please reload and resubmit. If that doesn't fix it, please IM me ASAP (AIM saizai) so I can debug it. Thanks!</p>
 	<% end %>
 </div>
 
