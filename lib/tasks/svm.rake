@@ -6,18 +6,18 @@ namespace :svm do
   desc "Take half the data, train an SVM, and test it on the other half. Ish."
   task :train_and_test => :environment do 
     pa = Parameter.new
-    pa.C = 100
-    pa.svm_type = C_SVC #  NU_SVC
-    pa.degree = 1
-    pa.coef0 = 0
-    pa.eps= 0.001
+#    pa.C = 100
+#    pa.svm_type = C_SVC #  NU_SVC
+#    pa.degree = 1
+#    pa.coef0 = 0
+#    pa.eps= 0.001
     kernels = [ LINEAR, POLY, RBF, SIGMOID ]
     kernel_names = [ 'Linear', 'Polynomial', 'Radial basis function', 'Sigmoid' ]
     
     test_labels, test_vectors, training_labels, training_vectors = [], [], [], []
     size = Visitation.maximum(:site_id)
-
-    Scraping.find_each do |scraping|
+    
+    Scraping.find_each :conditions => 'found_visitations_count > 0' do |scraping|
       test = (rand(2) == 1)
       (test ? test_labels : training_labels) << scraping.user_id
       subvector = Array.new(size, 0)

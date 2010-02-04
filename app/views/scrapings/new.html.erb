@@ -7,31 +7,51 @@ despite changes in their browsing history, even on new computers or new browsers
 
 <p>To help out, please visit this site from multiple different browsers / computers that you own, using the same input each time.</p>
 
-<p>This will take 30 seconds, and end in a status message saying it's done.</p>
+<p>This will take 60 seconds, and end in a status message saying it's done.</p>
 
 <p>Thanks!</p>
 
 <p>- <A href="http://saizai.com">Sai Emrys</A></p>
 
+<noscript>
+	<div style="color: red;">
+		<p>You currently have JavaScript turned off. Congratulations, I can't scrape you with this... though you're still vulnerable to the <a href="http://ha.ckers.org/weird/CSS-history.cgi">pure-CSS version</a>.</p>
+		<p>However, in order for me to collect useful data, I'd appreciate if you turn JS on and click the button. Thanks.</p>
+	</div>
+</noscript>
+
 <div style="margin:1em;">
-	<% form_remote_tag(:url => scrapings_url(:start_time => Time.now), :method => :post,
-							:loading => update_page {|page| page['status'].replace_html "Sending first batch..." }) do %>
+	<div id="status" style="color: red">Loading javascript...</div>
+	
+	<% form_remote_tag(:url => scrapings_url(:start_time => Time.now), :method => :post, :html => {:id => 'cookie_form'},
+							:loading => update_page {|page| page['status'].replace_html "Sending first batch..."; page['cookie_form'].disable }) do %>
 		<p>Enter something unique to you (not a password): <%= text_field_tag :cookie, cookies[:remember_token] %>
-		<%= submit_tag "Fingerprint me" %></p>
+		<%= submit_tag "Fingerprint me", :disabled => true %></p>
 		<p>Please change this to be something you can remember, so you can enter it again from a different browser/computer.</p><br/>
-		<p>What should happen is that when you hit the submit button, you'll see "Testing sites 1 through 201...", increasing rapidly 200 at a time.<br/>
+		<p>What should happen is that when you hit the submit button, you'll see "Testing sites 1 through 501...", increasing rapidly 500 at a time.<br/>
 			If you get <1000 URLs scraped, or it otherwise behaves oddly, please reload and resubmit. If that doesn't fix it, please IM me ASAP (AIM saizai) so I can debug it. Thanks!</p>
 	<% end %>
-	
-	<div id="status" style="color: red">Not yet started...</div>
 </div>
+
+<script>
+	// There appears to be an issue that people may be starting the form before the JS is loaded, which prevents the returned AJAX from being executed.
+	// So we just disable it until loaded. Kludge but works.
+	Event.observe(window, 'load', function(){
+		$('cookie_form').enable();
+		$('status').innerHTML = 'Ready to scrape!'
+	});
+</script>
+
 
 <small>
 	<p>For my fellow geeks:</p>
 	
-	<p>What I store is the cookie value you submit and, for each of the top ~2-14k Alexa sites (depending on your CPU and internet speed), whether or not you have visited that site.</p>
+	<p>What I store is the cookie value you submit, your user-agent, and, for each of the top ~2-40k Alexa sites (depending on your CPU and internet speed), whether or not you have visited that site.</p>
 	
-	<p>I make no attempt to find out who you are personally, and I don't store your IP; the point of this is simply to tell whether I can automatically identify when you visit again with a different browser.</p>
+	<p>I make no attempt to find out who you are personally, and I don't store your IP (except temporarily in log files).</p>
+	
+	<p>The point of this is simply to tell whether I can automatically identify when you visit again with a different browser. To do that, I need training/test data to feed my AI to tell it authoritatively whether two scrapings are the same user or not.
+	 Currently, I'm testing naive Bayes, SVD, and SVM; if you have suggestions for other methods or tweaks to what I'm doing now, please check out the repo and email me.</p>
 	
 	<p>The data will not be shared with anyone except other EFF-friendly researchers who agree to keep it confidential.</p>
 	
@@ -39,10 +59,19 @@ despite changes in their browsing history, even on new computers or new browsers
 	
 	<p>How it works:
 		<ol>
-			<li>scrape Alexa's 1M top sites list once per day, insert in db</li>
-			<li>when form is submitted, find/create a user for the cookie, execute the result</li>
-			<li>form result is code to test a given batch and fetch the next one</li>
-			<li>server cuts off client after 30 seconds, processes all the data in the background to speed things up</li>
+			<li>Scrape <a href="http://www.alexa.com/topsites">Alexa</a>'s <a href="http://s3.amazonaws.com/alexa-static/top-1m.csv.zip">1M top sites list</a> once per day, insert in db</li>
+			<li>When form is submitted, find/create a user for the cookie, execute the result</li>
+			<li>Form result is code to test a given batch and fetch the next one</li>
+			<li>Server cuts off client after 30 seconds, processes all the data in the background to speed things up</li>
+		</ol>
+	</p>
+	
+	<p>Known issues:
+		<ol>
+			<li>Step 2 above doesn't always work, especially on the first page load; it'll load and execute one batch, but not the next one. I have no good idea why and can't replicate it locally.</li>
+			<li>Alexa top sites list has some glaringly missing things (e.g. mail.google.com, reader.google.com), and the hit rate is consequently rather low (~1% or less). I probably need to supplement it with some other list. Suggestions appreciated.</li>
+			<li>In some circumstances - again as yet completely unclear - even known visited sites don't appear as hits. This may be because my JS scraper has a bug, or because of some browser behavior.</li>
+			<li>My current AI models really really suck. Like, worse than chance. I don't know if this is because the data is poor (~2-33 hits per scraping) or because the AI has an issue.</li>
 		</ol>
 	</p>
 	

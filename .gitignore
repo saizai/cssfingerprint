@@ -1,6 +1,7 @@
 .DS_Store
 log/*.log
 log/*.pid
+log/*.output
 tmp/**/*
 config/database.yml
 db/*.sqlite3
@@ -12,3 +13,4 @@ public/files/
 public/javascripts/all*.js
 public/stylesheets/all*.css
 config/mail.yml
+db/top-1m.csv*

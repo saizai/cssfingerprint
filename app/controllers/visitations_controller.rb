@@ -5,8 +5,8 @@ class VisitationsController < ApplicationController
     
     VisitationWorker.asynch_process_results :scraping_id => @scraping.id, :results => params[:results]
     
-    if @start_time > 30.seconds.ago
-      p "Last batch took #{Time.now - batch_start} seconds roundtrip" # TODO: modify batch size dynamically
+    if @start_time > 60.seconds.ago
+      p "Last batch took #{Time.now - batch_start} seconds roundtrip" # TODO: modify batch size dynamically?
       @offset += @limit
       @sites = Site.find(:all, :order => 'alexa_rank', :limit => @limit, :offset => @offset)
       render '/visitations/new.js.erb'

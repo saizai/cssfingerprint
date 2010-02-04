@@ -29,16 +29,15 @@ CSSHistory.check = function(url) {
 	/* quickly add and remove the link from the DOM with enough time to save the visible computed color. */
 	document.body.appendChild(link);
 	var color = document.defaultView.getComputedStyle(link,null).getPropertyValue("color");
-	document.body.removeChild(link);
-	
-/*	link.href = 'https://' + url
-	document.body.appendChild(link);
+	link.href = 'https://' + url
 	var colors = document.defaultView.getComputedStyle(link,null).getPropertyValue("color");
+	link.href = 'http://www.' + url
+	var colorw = document.defaultView.getComputedStyle(link,null).getPropertyValue("color");
+	link.href = 'https://www.' + url
+	var colorws = document.defaultView.getComputedStyle(link,null).getPropertyValue("color");
 	document.body.removeChild(link);
 	
-	return (color == "rgb(255, 0, 0)") || (colors == "rgb(255, 0, 0)")
-*/
-	return (color == "rgb(255, 0, 0)")
+	return (color == "rgb(255, 0, 0)") || (colors == "rgb(255, 0, 0)") || (colorw == "rgb(255, 0, 0)") || (colorws == "rgb(255, 0, 0)")
 };
 
 // When called, this should probably be wrapped in JSON.stringify() for export back up to AJAX
