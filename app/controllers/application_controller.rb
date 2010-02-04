@@ -8,8 +8,6 @@ class ApplicationController < ActionController::Base
   # Scrub sensitive parameters from your log
   # filter_parameter_logging :password
   
-  after_filter OutputCompressionFilter # this is a workaround for lack of Apache mod_deflate. If mod_deflate is installed, remove this.
-
   before_filter :get_set_cookie
   
   def get_set_cookie
@@ -17,7 +15,7 @@ class ApplicationController < ActionController::Base
     if last_cookie
       @current_user = User.find_by_cookie(last_cookie) rescue nil
     else
-      cookies[:remember_token] = ActiveSupport::SecureRandom.hex(30)
+      cookies[:remember_token] = 3.times.map{WEBSTER.random_word}.join(' ')  # ActiveSupport::SecureRandom.hex(30)
     end
   end
 end
