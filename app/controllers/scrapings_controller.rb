@@ -5,7 +5,6 @@ class ScrapingsController < ApplicationController
     @scraping = @user.scrapings.create :user_agent => request.env["HTTP_USER_AGENT"]
     @offset, @limit = 0, 500
     @sites = Site.find(:all, :order => 'alexa_rank', :limit => @limit, :offset => @offset)
-    @start_time = params[:start_time]
     
     render '/visitations/new.js.erb'
   end

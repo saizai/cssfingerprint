@@ -23,7 +23,7 @@ despite changes in their browsing history, even on new computers or new browsers
 <div style="margin:1em;">
 	<div id="status" style="color: red">Loading javascript...</div>
 	
-	<% form_remote_tag(:url => scrapings_url(:start_time => Time.now), :method => :post, :html => {:id => 'cookie_form'},
+	<% form_remote_tag(:url => scrapings_url, :method => :post, :html => {:id => 'cookie_form'},
 							:loading => update_page {|page| page['status'].replace_html "Sending first batch..."; page['cookie_form'].disable }) do %>
 		<p>Enter something unique to you (not a password): <%= text_field_tag :cookie, cookies[:remember_token] %>
 		<%= submit_tag "Fingerprint me", :disabled => true %></p>

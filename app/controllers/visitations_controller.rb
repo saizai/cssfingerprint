@@ -1,13 +1,12 @@
 class VisitationsController < ApplicationController
   def create
     @scraping = Scraping.find(params[:scraping_id].to_i)
-    @limit, @offset, @start_time, batch_start = params[:limit].to_i, params[:offset].to_i, Time.parse(params[:start_time]), Time.parse(params[:batch_start])
+    @limit, @offset = params[:limit].to_i, params[:offset].to_i
     
     VisitationWorker.asynch_process_results :scraping_id => @scraping.id, :results => params[:results]
     
-    if @start_time > 60.seconds.ago
-      p "Last batch took #{Time.now - batch_start} seconds roundtrip" # TODO: modify batch size dynamically?
-      @offset += @limit
+    if @scraping.created_at > 60.seconds.ago
+      @offset += @limit # TODO: modify batch size dynamically?
       @sites = Site.find(:all, :order => 'alexa_rank', :limit => @limit, :offset => @offset)
       render '/visitations/new.js.erb'
     else
