@@ -1,0 +1,38 @@
+<p>Please visit again from your other computers / browsers, and again in a few days so we can see how your history has changed.</p>
+
+<p>Be sure to always input your code: <b><%= @current_user.cookie %></b></p>
+
+<p>Thanks for participating!</p>
+<br/>
+
+<p>The AI is not yet operational - I need more data. But for now, here are your results.</p>
+
+<style>ul.multi {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+ 
+ul.multi li {
+  float: left;
+  width: 20em;
+  margin: 0;
+  padding: 0;
+}
+</style>
+
+<% if @sites %>
+	<p><%= @sites.count %> sites found of <%= @scraping.visitations_count %> checked in this scraping.</p>
+<% else %>
+	<p>CSS Fingerprint did not find ANY sites visited out of <%= @scraping.visitations_count %> checked.</p>
+	<p>Given that cssfingerprint.com is one of the ones we tested, and we know you visited this page, that means you're immune to the 	hack!</p>
+	<p>Congratulations.</p>
+<% end %>
+<p>% of the time we've gotten these hits from you (this scraping's hits in <span style="color:blue;">blue</span>):</p>
+
+<ul class="multi">
+	<% @probabilities.sort.each do |site, prob| %>
+		<li><%= number_to_percentage prob * 100, :precision => 0 %> <%= link_to site, 'http://' + site, :style => "text-decoration:none; color: #{@sites.include?(site) ? 'blue' : 'red'}" %></li>
+	<% end %>
+</ul>
