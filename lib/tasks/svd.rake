@@ -4,14 +4,14 @@ namespace :svd do
   desc "Take half the data, extract SVD, and test it on the other half. Ish."
   task :train_and_test => :environment do 
     test_labels, test_vectors, training_labels, training_vectors = [], [], [], []
-    size = 200 # Visitation.maximum(:site_id)
+    size = 15000 # Visitation.maximum(:site_id)
     
     Scraping.find_each :conditions => 'found_visitations_count > 0' do |scraping|
       test = (rand < 0.3)
       (test ? test_labels : training_labels) << scraping.user_id
       subvector = Array.new(size, 0)
       scraping.visitations.find(:all, :order => :site_id, :limit => size).each do |visitation|
-        subvector[visitation.site_id - 1] = (visitation.visited ? 1 : 0)
+        subvector[visitation.site_id - 1] = (visitation.visited ? 1 : 0) if visitation.site_id < size
       end
       (test ? test_vectors : training_vectors) << subvector
     end
@@ -31,27 +31,31 @@ namespace :svd do
     eig2 = Linalg::DMatrix.columns [s.column(0).to_a.flatten[0,2], s.column(1).to_a.flatten[0,2]]
     
     test_results = []
-    test_vectors.each_with_index do |test, i|
-      test = Linalg::DMatrix.rows [test]
-      testEmbed = test * u2 * eig2.inverse
-      
-      # Compute the cosine similarity between Bob and every other User in our 2-D space
-      user_sim = {}
-      v2.rows.each_with_index { |x, j|
-        user_sim[j] = (testEmbed.transpose.dot(x.transpose)) / (x.norm * testEmbed.norm)
-        test_results << [i, j, user_sim[j], (training_labels[j] == test_labels[i] ? 1 : 0)] unless user_sim[j].nan?
-      }
-      
-      # Remove all users who fall below the 0.90 cosine similarity cutoff and sort by similarity
-      # similar_users = user_sim.delete_if {|k,sim| sim < 0.6 or sim.nan? }.sort {|a,b| b[1] <=> a[1] }
-      # similar_users.each { |u| printf "(ID: %d, Similarity: %0.3f) \n", u[0], u[1]  }
-      
-    end
     
-    z = test_results.map{|y|[ (y[3]-y[2]).abs, 1].min **2}
-    puts "RMSE: #{Math.sqrt(z.sum / z.size)}"
-    z = test_results.map{|y|[ (y[3]-rand).abs, 1].min **2}
-    puts "random RMSE: #{Math.sqrt(z.sum / z.size)}"
+    50.times do |offset|
+    
+      test_vectors.each_with_index do |test, i|
+        test = Linalg::DMatrix.rows [test]
+        testEmbed = test * u2 * eig2.inverse
+      
+        # Compute the cosine similarity between Bob and every other User in our 2-D space
+        user_sim = {}
+        v2.rows.each_with_index { |x, j|
+          user_sim[j] = (testEmbed.transpose.dot(x.transpose)) / (x.norm * testEmbed.norm)
+          test_results << [i, j, user_sim[j], (training_labels[j] == test_labels[i - offset] ? 1 : 0)] unless user_sim[j].nan?
+        }
+      
+        # Remove all users who fall below the 0.90 cosine similarity cutoff and sort by similarity
+        # similar_users = user_sim.delete_if {|k,sim| sim < 0.6 or sim.nan? }.sort {|a,b| b[1] <=> a[1] }
+        # similar_users.each { |u| printf "(ID: %d, Similarity: %0.3f) \n", u[0], u[1]  }
+      
+      end
+      puts "Offset: -#{offset}"
+      z = test_results.map{|y|[ (y[3]-y[2]).abs, 1].min **2}
+      puts "RMSE: #{Math.sqrt(z.sum / z.size)}"
+      z = test_results.map{|y|[ (y[3]-rand).abs, 1].min **2}
+      puts "random RMSE: #{Math.sqrt(z.sum / z.size)}"
+    end
   end
 end
 

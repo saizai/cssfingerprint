@@ -7,7 +7,7 @@ namespace :alexa do
     # If RAM needs to be conserved, use FasterCSV.foreach and Site.create instead 
     # In testing, single-item import was about ~600 items per second; batch import was ~1300
     
-    FileUtils.rm(File.join(RAILS_ROOT, 'db', 'top-1m.csv.zip'))
+    FileUtils.rm(File.join(RAILS_ROOT, 'db', 'top-1m.csv.zip')) rescue true
     `cd #{File.join(RAILS_ROOT, 'db')} && wget http://s3.amazonaws.com/alexa-static/top-1m.csv.zip`
     `cd #{File.join(RAILS_ROOT, 'db')} && unzip -o top-1m.csv.zip`
     puts "Parsing..."

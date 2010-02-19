@@ -49,3 +49,4 @@ Rails::Initializer.run do |config|
 end
 
 WEBSTER = Webster.new # Random word generator
+Workling::Return::Store.instance = Workling::Return::Store::StarlingReturnStore.new

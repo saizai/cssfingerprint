@@ -5,4 +5,8 @@ class Scraping < ActiveRecord::Base
   has_many :found_sites, :through => :found_visitations, :class_name => 'Site', :source => :site
   
   validates_numericality_of :visitations_count
+  
+  def self.failed_agents
+    Scraping.find(:all, :group => 'user_agent', :select => 'max(found_visitations_count) as maxfvc, user_agent', :having => 'maxfvc = 0').map(&:user_agent).sort
+  end
 end

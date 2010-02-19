@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
 
   # Scrub sensitive parameters from your log
-  # filter_parameter_logging :password
+  filter_parameter_logging :results
   
   before_filter :get_set_cookie
   
@@ -14,8 +14,9 @@ class ApplicationController < ActionController::Base
     last_cookie = cookies[:remember_token]
     if last_cookie
       @current_user = User.find_by_cookie(last_cookie) rescue nil
-    else
-      cookies[:remember_token] = 3.times.map{WEBSTER.random_word}.join(' ')  # ActiveSupport::SecureRandom.hex(30)
+    # else
+# Force user to input something
+#      cookies[:remember_token] = random_string
     end
   end
 end

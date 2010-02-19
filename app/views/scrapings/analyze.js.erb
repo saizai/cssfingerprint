@@ -1,1 +1,4 @@
-<%= update_page {|page| page['status'].replace_html "Done! #{@offset + @limit} URLs queried with ~#{@scraping.found_visitations_count} hits. In a future version, this is where I'd try to figure out if I've seen you before..." } %>
+<%= remote_function :url => results_scraping_url(@scraping.id), :method => :get, 
+		:loading => update_page {|page| page['status'].replace_html "Done. Analyzing results..."},
+		:update => 'status'
+%>
