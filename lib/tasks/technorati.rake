@@ -13,7 +13,8 @@ namespace :technorati do
   
       next_page "//a[@class='next']", :limit => 5
     end
-
-    Site.import [:alexa_rank, :url], technorati.to_hash.map{|x| [0, x[:link_url]]}, :validate => false, :on_duplicate_key_update => [:alexa_rank] 
+    
+    Site.import [:alexa_rank, :url], technorati.to_hash.map{|x| [0, x[:link_url].sub('http://www.', '').sub('http://','').sub(/\/$/, '')]}, 
+        :validate => false, :on_duplicate_key_update => [:alexa_rank] 
   end
 end
