@@ -1,9 +1,9 @@
 class User < ActiveRecord::Base
-  has_many :attempted_scrapings, :dependent => :destroy
-  has_many :scrapings, :conditions => "found_visitations_count > 0", :class_name => "Scraping"
-  has_many :visitations, :through => :scrapings
-  has_many :found_visitations, :through => :scrapings
-  has_many :unfound_visitations, :through => :scrapings
+  has_many :scrapings, :dependent => :destroy
+  has_many :successful_scrapings, :conditions => "found_visitations_count > 0", :class_name => "Scraping"
+  has_many :visitations, :through => :successful_scrapings
+  has_many :found_visitations, :through => :successful_scrapings
+  has_many :unfound_visitations, :through => :successful_scrapings
   
   validates_presence_of :cookie
   validates_uniqueness_of :cookie
