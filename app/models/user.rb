@@ -1,13 +1,16 @@
 class User < ActiveRecord::Base
   has_many :scrapings, :dependent => :destroy
+  has_many :visitations, :through => :scrapings
+  has_many :found_visitations, :through => :scrapings
+  has_many :unfound_visitations, :through => :scrapings
   
   validates_presence_of :cookie
   validates_uniqueness_of :cookie
   
   def probability_vector
-    found_sites = scrapings.map(&:found_visitations).flatten.map(&:site_id) # inefficient but not worth fixing
-    scale = scrapings.count * 1.0
-    vector = found_sites.inject({}){|m,x| m[x] ||= 0; m[x] += (1 / scale); m  }
+    found_sites = found_visitations.find(:all, :select => 'site_id').map(&:site_id)
+    visitations.find(:all, :group => 'site_id', :select => 'site_id, AVG(visited) as prob',
+      :conditions => ["site_id IN (?)", found_sites]).inject({}){|m, x| m[x.site_id] = x.prob.to_f; m }
   end
   
   def url_probabilities

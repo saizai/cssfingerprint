@@ -29,10 +29,10 @@ ul.multi li {
 	<p>Given that cssfingerprint.com is one of the ones we tested, and we know you visited this page, that means you're immune to the 	hack!</p>
 	<p>Congratulations.</p>
 <% end %>
-<p>% of the time we've gotten these hits from you (this scraping's hits in <span style="color:blue;">blue</span>):</p>
+<p>% of the time we've gotten these hits from you (this scraping's hits in <span style="color:blue;">blue</span>; untested URLs in <span style="color:gray;">gray</span>):</p>
 
 <ul class="multi">
 	<% @probabilities.sort.each do |site, prob| %>
-		<li><%= number_to_percentage prob * 100, :precision => 0 %> <%= link_to site, 'http://' + site, :style => "text-decoration:none; color: #{@sites.include?(site) ? 'blue' : 'red'}" %></li>
+		<li><%= number_to_percentage prob * 100, :precision => 0 %> <%= link_to site, 'http://' + site, :style => "text-decoration:none; color: #{@sites.include?(site) ? 'blue' : (@unfound_sites.include?(site) ? 'red' : 'gray')}" %></li>
 	<% end %>
 </ul>

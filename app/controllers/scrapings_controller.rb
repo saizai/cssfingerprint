@@ -35,6 +35,7 @@ class ScrapingsController < ApplicationController
     end
     @scraping = @current_user.scrapings.find(params[:id])
     @sites = @scraping.found_sites.map(&:url)
+    @unfound_sites = @scraping.unfound_sites.map(&:url)
     @probabilities = @current_user.url_probabilities
   end
 end
