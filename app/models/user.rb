@@ -21,7 +21,7 @@ class User < ActiveRecord::Base
   
   # FIXME: Make this make each user weight 1, i.e. each visitation weighted (1 / # scrapings for this user-site)
   def self.avg_probability_vector site_ids = nil
-    site_ids ||= Visitation.find(:all, :select => 'site_id', :conditions => 'visited = 1').map(&:site_id)
+    site_ids ||= Visitation.find(:all, :select => 'DISTINCT site_id', :conditions => 'visited = 1').map(&:site_id)
     successful_scraping_ids = Scraping.find(:all, :select => 'id', :conditions => 'found_visitations_count > 0').map(&:id)
     Visitation.find(:all, :group => 'site_id', :select => 'site_id, AVG(visited) as prob',
       :conditions => ["site_id IN (?) AND scraping_id IN (?)", site_ids, successful_scraping_ids]).inject({}){|m, x|

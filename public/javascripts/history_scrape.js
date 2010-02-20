@@ -39,15 +39,15 @@ CSSHistory.check = function(url) {
 	var found = false;
 	var prefixes = ['http://', 'https://', 'http://www.', 'https://www.'];
 	
-	for (prefix in prefixes) {
-		link.href = prefix + url;
+	for (i = 0; i < prefixes.length; i++){
+		link.href = prefixes[i] + url;
 	    
 		// Version 2 - modified from AttackAPI
-		if (link.currentStyle)
+		if (link.currentStyle) {
 		    found = found || (link.currentStyle['display'] == 'none');
-	    else
+	    } else {
 			found = found || (document.defaultView.getComputedStyle(link, null).getPropertyValue('display') == 'none');
-		
+		}
 		/*
 		// Version 1 - modified from the original hack
 		if(document.defaultView)
