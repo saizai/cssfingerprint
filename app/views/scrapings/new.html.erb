@@ -49,6 +49,16 @@
 
 <p>- <A href="http://saizai.com">Sai Emrys</A> (saizai)</p>
 
+<p>P.S. Thanks to:
+	<ul>
+		<li>Daniel Bartlett - making an (almost) IE-compatible history hack</li>
+		<li>Michael Chui - pinpointing the damn MSIE failure-to-update-on-href-change bug</li>
+		<li>Alex Fink - better processing algorithms and response UI</li>
+		<li>Jeremiah Grossman - writing the original CSS History Hack!</li>
+		<li>Leif Ryge - suggestions for better input and response UI</li>
+	</ul>
+</p>
+
 <small>
 	<h3>About (for geeks)</h3>
 	
@@ -77,7 +87,7 @@
 		<ol>
 			<li><s>Step 2 above doesn't always work, especially on the first page load; it'll load and execute one batch, but not the next one. I have no good idea why and can't replicate it locally.</s></li>
 			<li>Alexa top sites list has some glaringly missing things (e.g. mail.google.com, reader.google.com), and the hit rate is consequently rather low (~1% or less). I probably need to supplement it with some other list. Suggestions appreciated.</li>
-			<li>MSIE, Android Safari, NT 5.1 Firefox, Konqueror, and iPhone/iPad have not yet worked. Probably something wrong with the getComputedStyle / currentStyle method in the scraper. Patches welcome.</li>
+			<li><s>MSIE</s>, Android Safari, NT 5.1 Firefox, Konqueror, and iPhone/iPad have not yet worked. Probably something wrong with the getComputedStyle / currentStyle method in the scraper. Patches welcome.</li>
 			<li>In some circumstances - again as yet completely unclear - even known visited sites on known supported browsers (e.g. OSX Firefox) don't appear as hits. This may be because my JS scraper has a bug, or because of some browser behavior.</li>
 			<li>My current AI models really really suck. Like, worse than chance. I don't know if this is because the data is poor (~2-33 hits per scraping) or because the AI has an issue.</li>
 		</ol>
