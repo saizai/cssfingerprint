@@ -37,9 +37,5 @@ class ScrapingsController < ApplicationController
     @sites = @scraping.found_sites.map(&:url)
     @probabilities = @current_user.url_probabilities
   end
-# Stuff to add:
-# * technorati blogs; Digg stories
-# * better format
-# * bigger unique string prompt
 end
  
