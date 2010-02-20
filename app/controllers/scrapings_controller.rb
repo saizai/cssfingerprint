@@ -36,7 +36,9 @@ class ScrapingsController < ApplicationController
     @scraping = @current_user.scrapings.find(params[:id])
     @sites = @scraping.found_sites.map(&:url)
     @unfound_sites = @scraping.unfound_sites.map(&:url)
-    @probabilities = @current_user.url_probabilities
+    pv = @current_user.probability_vector
+    @probabilities = @current_user.url_probabilities(pv)
+    @avg_up = User.avg_url_probabilities pv.keys
   end
 end
  

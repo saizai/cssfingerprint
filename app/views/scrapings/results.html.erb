@@ -29,10 +29,14 @@ ul.multi li {
 	<p>Given that cssfingerprint.com is one of the ones we tested, and we know you visited this page, that means you're immune to the 	hack!</p>
 	<p>Congratulations.</p>
 <% end %>
-<p>% of the time we've gotten these hits from you (this scraping's hits in <span style="color:blue;">blue</span>; untested URLs in <span style="color:gray;">gray</span>):</p>
+<p>% of the time we've gotten these hits from you vs the average user (this scraping's hits in <span style="color:blue;">blue</span>; untested URLs in <span style="color:gray;">gray</span>; more significant = more opaque):</p>
 
 <ul class="multi">
-	<% @probabilities.sort.each do |site, prob| %>
-		<li><%= number_to_percentage prob * 100, :precision => 0 %> <%= link_to site, 'http://' + site, :style => "text-decoration:none; color: #{@sites.include?(site) ? 'blue' : (@unfound_sites.include?(site) ? 'red' : 'gray')}" %></li>
+	<% @probabilities.sort.each do |site, prob| 
+		diff = ((@avg_up[site] - prob).abs * 0.7) + 0.3
+		%>
+		<li style="opacity:<%= diff %>;filter:alpha(opacity=<%= diff * 100 %>)"><%= number_to_percentage prob * 100, :precision => 0 %> 
+			vs <%= number_to_percentage @avg_up[site] * 100, :precision => 0 %>
+		<%= link_to site, 'http://' + site, :style => "text-decoration:none; color: #{@sites.include?(site) ? 'blue' : (@unfound_sites.include?(site) ? 'red' : 'gray')}" %></li>
 	<% end %>
 </ul>
