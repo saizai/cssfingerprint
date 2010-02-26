@@ -14,3 +14,5 @@ public/javascripts/all*.js
 public/stylesheets/all*.css
 config/mail.yml
 db/top-1m.csv*
+tmp/*
+
