@@ -15,7 +15,7 @@ class CreateSites < ActiveRecord::Migration
     end
     
     add_index :sites, :url, :unique => true
-    add_index :sites, :alexa_rank
+    add_index :sites, [:alexa_rank, :id, :url] # needs to be identical to the SELECT for an ORDER BY query to be optimized
     add_index :sites, :users_count
   end
 

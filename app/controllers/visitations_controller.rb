@@ -15,7 +15,7 @@ class VisitationsController < ApplicationController
     
     if @scraping.created_at > 60.seconds.ago
       @offset += (@limit * THREADS) # TODO: modify batch size dynamically?
-      @sites = Site.find(:all, :order => 'alexa_rank', :limit => @limit, :offset => @offset)
+      @sites = Site.find(:all, :order => 'alexa_rank', :limit => @limit, :offset => @offset, :select => 'alexa_rank, id, url')
       render '/visitations/new.js.erb'
     elsif @thread_id == THREADS - 1
       @current_user.update_attribute :job_id, asynch_code
@@ -31,7 +31,7 @@ class VisitationsController < ApplicationController
     @thread_id = params[:thread_id].to_i
     @offset += @limit * @thread_id
     
-    @sites = Site.find(:all, :order => 'alexa_rank', :limit => @limit, :offset => @offset)
+    @sites = Site.find(:all, :order => 'alexa_rank', :limit => @limit, :offset => @offset, :select => 'alexa_rank, id, url')
   end
   
 end

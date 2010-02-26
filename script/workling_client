@@ -9,7 +9,7 @@ options = {
   :dir_mode   => :normal,
   :dir        => File.join(File.dirname(__FILE__), '..', 'log'),
   :log_output => true,
-  :multiple   => false,
+  :multiple   => true, #false,
   :backtrace  => true,
   :monitor    => true
 }

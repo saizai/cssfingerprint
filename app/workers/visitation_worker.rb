@@ -6,17 +6,14 @@ class VisitationWorker < Workling::Base
   BG_LOGGER.debug "#{Time.now.to_s}: Loading VisitationWorker. Return store: #{Workling.return.inspect}"
   
   def process_results(options)
-    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Processing..."
     scraping_id, results = options[:scraping_id], options[:results]
     results = JSON.parse(results)
-    sites = Site.find(:all, :conditions => ['url IN (?)', results.keys]).map{|s| [s.id, s.url]}
+    sites = Site.find(:all, :conditions => ['url IN (?)', results.keys], :select => 'id, url').map{|s| [s.id, s.url]}
     Visitation.import [:scraping_id, :site_id, :visited], results.map{|key,value| [scraping_id, sites.rassoc(key)[0], value]}, :validate => false # save a bit of RAM
-        
+    
     # because we're using mass import, this isn't getting updated automagically
     found_count = results.map{|k,v| v}.count(true) 
     Scraping.update_counters scraping_id, :visitations_count => results.size, :found_visitations_count => found_count
-    
-    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Setting return to #{found_count}..."
     
     Workling.return.set options[:uid], found_count
     
@@ -24,6 +21,6 @@ class VisitationWorker < Workling::Base
     # there should be a faster way of doing this
     # sites.map{|s| s.update_attribute :users_count, x.found_scrapings.count('DISTINCT user_id')}
     
-    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Processed #{results.count} results for scraping #{scraping_id}"
+    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Processed scraping #{scraping_id} offset #{sites.first[0]}; found #{found_count} / #{results.size}"
   end
 end
