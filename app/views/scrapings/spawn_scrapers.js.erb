@@ -1,0 +1,6 @@
+<%= update_page do |page|
+	THREADS.times do |i|
+		page.insert_html :bottom, 'scrapers', "<iframe style='float: left; width: 1px; height: 1px; border: none;' 
+				src='#{ autoscrape_visitations_url(:scraping_id => @scraping.id, :thread_id => i) }'>" # , :host => "#{i}.cssfingerprint.com"
+	end
+end %>
