@@ -8,15 +8,15 @@ class ApplicationController < ActionController::Base
   # Scrub sensitive parameters from your log
   filter_parameter_logging :results
   
-  before_filter :get_set_cookie
+  before_filter :get_user
   
-  def get_set_cookie
-    last_cookie = cookies[:remember_token]
-    if last_cookie
-      @current_user = User.find_by_cookie(last_cookie) rescue nil
-    # else
-# Force user to input something
-#      cookies[:remember_token] = random_string
-    end
+  def get_user
+    @current_user = User.find(session[:user_id]) if session[:user_id] # the cookie should be signed, so this should be trustworthy
   end
+  
+  def effective_threads
+    # be nice to the puny mobile devices
+    request.user_agent.include?("Mobile") ? 1 : THREADS
+  end
+  helper_method :effective_threads
 end

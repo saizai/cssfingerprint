@@ -15,7 +15,7 @@ class VisitationWorker < Workling::Base
     found_count = results.map{|k,v| v}.count(true) 
     Scraping.update_counters scraping_id, :visitations_count => results.size, :found_visitations_count => found_count
     
-    Workling.return.set options[:uid], found_count
+    Workling.return.set options[:uid], found_count if options[:return]
     
     # BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Updating scrapings count..."
     # there should be a faster way of doing this

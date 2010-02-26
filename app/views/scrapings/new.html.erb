@@ -10,8 +10,9 @@
 	
 	<div style="margin:1em;">
 		
+		<div id="results"></div>
 		<div id="status"></div>
-		<% THREADS.times do |i| %>
+		<% effective_threads.times do |i| %>
 			<div id="status_<%= i %>"><% 'Loading javascript...' if i == 0 %></div>
 		<% end %>
 		<div style="clear:both;"></div>
@@ -22,18 +23,12 @@
 			</p>
 			<p>Have you visited before? <%= check_box_tag :repeat_user, '1', !cookies[:remember_token].blank? %></p>
 			<p><%= submit_tag "Fingerprint me", :disabled => true %>
-				<br/>Warning: DO NOT use this from a public computer.</p>
+				<br/>Warning: DO NOT use this from a public computer. This may cause your computer to run slowly for about a minute; it's normal, just be patient.</p>
 		<% end %>
 		
 		<div id="scrapers" style="width: 1px; height: 1px;"></div>
 		
-		<script>
-			function analyze() { // This is here so that child iframes (ie threads) can invoke it, as they're the ones doing recursion
-				<%= remote_function :url => results_scrapings_url(), :method => :get, 
-					:loading => "$('status_0').hide(); $('status').update('Done. Analyzing results...');",
-					:update => 'status'%>
-			} 
-		</script>
+		<%= periodically_call_remote :frequency => 2, :condition => "completed == false", :url => results_scrapings_url(), :method => :get %>
 	</div>
 
 	<p>When you hit the submit button, you'll see "Testing sites 1 through 501...", increasing rapidly 500 at a time, ending with a "Done!" message and a display of your stats. It will take 60 seconds, and scrape about 3k-20k URLs.</p>
@@ -46,6 +41,7 @@
 		Event.observe(window, 'load', function(){
 			$('cookie_form').enable();
 			$('status_0').innerHTML = 'Ready to scrape!'
+			completed = true; // will be falsified by the spawner
 		});
 	</script>
 </div>
