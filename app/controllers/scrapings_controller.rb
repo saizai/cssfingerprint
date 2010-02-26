@@ -22,10 +22,8 @@ class ScrapingsController < ApplicationController
     
     cookies[:remember_token] = params[:cookie]
     @scraping = @current_user.scrapings.create :user_agent => request.env["HTTP_USER_AGENT"]
-    @offset, @limit = 0, 500
-    @sites = Site.find(:all, :order => 'alexa_rank', :limit => @limit, :offset => @offset)
-  
-    render '/visitations/new.js.erb'
+    
+    render '/scrapings/spawn_scrapers.js.erb'
   end
   
   def results
@@ -33,7 +31,7 @@ class ScrapingsController < ApplicationController
     until Workling.return.get(@current_user.job_id) or (start_time < 10.seconds.ago)
       ; # wait for it rather than polling
     end
-    @scraping = @current_user.scrapings.find(params[:id])
+    @scraping = @current_user.scrapings.last # .find(params[:id])
     @sites = @scraping.found_sites.map(&:url)
     @unfound_sites = @scraping.unfound_sites.map(&:url)
     pv = @current_user.probability_vector

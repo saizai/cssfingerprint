@@ -1,4 +1,4 @@
 <%= remote_function :url => results_scraping_url(@scraping.id), :method => :get, 
-		:loading => update_page {|page| page['status'].replace_html "Done. Analyzing results..."},
+		:loading => "top.document.getElementById('status_#{@thread_id}').update('Done. Analyzing results...');",
 		:update => 'status'
 %>

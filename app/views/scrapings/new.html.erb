@@ -1,66 +1,86 @@
-<h3>Participate</h3>
-
-<noscript>
-	<div style="color: red;">
-		<p>You currently have JavaScript turned off. Congratulations, I can't scrape you with this... though you're still vulnerable to the <a href="http://ha.ckers.org/weird/CSS-history.cgi">pure-CSS version</a>.</p>
-		<p>However, in order for me to collect useful data, I'd appreciate if you turn JS on and click the button. Thanks.</p>
+<div id="participate">
+	<h3>Participate</h3>
+	
+	<noscript>
+		<div style="color: red;">
+			<p>You currently have JavaScript turned off. Congratulations, I can't scrape you with this... though you're still vulnerable to the <a href="http://ha.ckers.org/weird/CSS-history.cgi">pure-CSS version</a>.</p>
+			<p>However, in order for me to collect useful data, I'd appreciate if you turn JS on and click the button. Thanks.</p>
+		</div>
+	</noscript>
+	
+	<div style="margin:1em;">
+		
+		<div id="status"></div>
+		<% THREADS.times do |i| %>
+			<div id="status_<%= i %>"><% 'Loading javascript...' if i == 0 %></div>
+		<% end %>
+		<div style="clear:both;"></div>
+		<% form_remote_tag(:url => scrapings_url, :method => :post, :html => {:id => 'cookie_form'},
+					:loading => update_page {|page| page['status_0'].replace_html "Checking code..."; page['cookie_form'].hide }) do %>
+			<p>Enter something unique to you (NOT a password). <%= text_field_tag :cookie, cookies[:remember_token] %> <small> E.g. <%= random_string %></small>
+			<br/><span style="color:red;">Please use <b>the same code</b> every time you visit (including from other browsers/computers).</span>
+			</p>
+			<p>Have you visited before? <%= check_box_tag :repeat_user, '1', !cookies[:remember_token].blank? %></p>
+			<p><%= submit_tag "Fingerprint me", :disabled => true %>
+				<br/>Warning: DO NOT use this from a public computer.</p>
+		<% end %>
+		
+		<div id="scrapers" style="width: 1px; height: 1px;"></div>
+		
+		<script>
+			function analyze() { // This is here so that child iframes (ie threads) can invoke it, as they're the ones doing recursion
+				<%= remote_function :url => results_scrapings_url(), :method => :get, 
+					:loading => "$('status_0').hide(); $('status').update('Done. Analyzing results...');",
+					:update => 'status'%>
+			} 
+		</script>
 	</div>
-</noscript>
 
-<div style="margin:1em;">
-	<div id="status">Loading javascript...</div>
-	<div style="clear:both;"/>
-	<% form_remote_tag(:url => scrapings_url, :method => :post, :html => {:id => 'cookie_form'},
-				:loading => update_page {|page| page['status'].replace_html "Checking code..."; page['cookie_form'].hide }) do %>
-		<p>Enter something unique to you (NOT a password). <%= text_field_tag :cookie, cookies[:remember_token] %> <small> E.g. <%= random_string %></small>
-		<br/><span style="color:red;">Please use <b>the same code</b> every time you visit (including from other browsers/computers).</span>
-		</p>
-		<p>Have you visited before? <%= check_box_tag :repeat_user, '1', !cookies[:remember_token].blank? %></p>
-		<p><%= submit_tag "Fingerprint me", :disabled => true %></p>
-		<br/>
-		<p>When you hit the submit button, you'll see "Testing sites 1 through 501...", increasing rapidly 500 at a time, ending with a "Done!" message and a display of your stats. It will take 60 seconds, and scrape about 3k-20k URLs.</p>
-		<p>If you get &lt;1000 URLs scraped, or it otherwise behaves oddly, please reload and resubmit. If that doesn't fix it, please IM me ASAP (AIM saizai) so I can debug it. Thanks!</p>
-	<% end %>
+	<p>When you hit the submit button, you'll see "Testing sites 1 through 501...", increasing rapidly 500 at a time, ending with a "Done!" message and a display of your stats. It will take 60 seconds, and scrape about 3k-20k URLs.</p>
+	<p>If you get &lt;1000 URLs scraped or 0 hits, or it otherwise behaves oddly, please reload and resubmit. If that doesn't fix it, please IM me ASAP (AIM saizai) so I can debug it. Thanks!</p>
+	<p><small>There are a few <a href="#bugs">known bugs</a>.</small></p>
+	
+	<script>
+		// There appears to be an issue that people may be starting the form before the JS is loaded, which prevents the returned AJAX from being executed.
+		// So we just disable it until loaded. Kludge but works.
+		Event.observe(window, 'load', function(){
+			$('cookie_form').enable();
+			$('status_0').innerHTML = 'Ready to scrape!'
+		});
+	</script>
 </div>
 
-<script>
-	// There appears to be an issue that people may be starting the form before the JS is loaded, which prevents the returned AJAX from being executed.
-	// So we just disable it until loaded. Kludge but works.
-	Event.observe(window, 'load', function(){
-		$('cookie_form').enable();
-		$('status').innerHTML = 'Ready to scrape!'
-	});
-</script>
+<div id="about">
+	<h3>About CSS Fingerprint</h3>
 
+	<p>CSS Fingerprint is a research project inspired by the EFF's <a href="http://panopticlick.eff.org">Panopticlick</a>.</p>
 
-<h3>About CSS Fingerprint</h3>
+	<p>Its intent is to see how well the <a href="http://ha.ckers.org/weird/CSS-history-hack.html">CSS history hack</a> can be used with "fuzzy" AI techniques to uniquely fingerprint users <i>despite changes in their browsing history, even on new computers or new browsers</i>.</p>
 
-<p>CSS Fingerprint is a research project inspired by the EFF's <a href="http://panopticlick.eff.org">Panopticlick</a>.</p>
+	<p>A weakness of Panopticlick's method is that it is very browser-specific. That means that while they can fairly well identify your exactly configured browser if you visit again, they cannot easily identify <i>you the human</i> if you visit from multiple computers or browsers, even if your behavior is similar.</p>
 
-<p>Its intent is to see how well the <a href="http://ha.ckers.org/weird/CSS-history-hack.html">CSS history hack</a> can be used with "fuzzy" AI techniques to uniquely fingerprint users <i>despite changes in their browsing history, even on new computers or new browsers</i>.</p>
+	<p>At the moment, the AI component is not yet active. In order to write it, I need data.</p>
 
-<p>A weakness of Panopticlick's method is that it is very browser-specific. That means that while they can fairly well identify your exactly configured browser if you visit again, they cannot easily identify <i>you the human</i> if you visit from multiple computers or browsers, even if your behavior is similar.</p>
+	<p>To help out, please visit this site from multiple different browsers / computers that you own, on multiple days, using the same input each time.</p>
 
-<p>At the moment, the AI component is not yet active. In order to write it, I need data.</p>
+	<p>Thanks!</p>
 
-<p>To help out, please visit this site from multiple different browsers / computers that you own, on multiple days, using the same input each time.</p>
+	<p>- <A href="http://saizai.com">Sai Emrys</A> (saizai)</p>
 
-<p>Thanks!</p>
+	<p>P.S. Thanks to:
+		<ul>
+			<li>Daniel Bartlett - making an (almost) IE-compatible history hack</li>
+			<li>Michael Chui - pinpointing the damn MSIE failure-to-update-on-href-change bug</li>
+			<li>Alex Fink - better processing algorithms and response UI</li>
+			<li>Jeremiah Grossman - writing the original CSS History Hack!</li>
+			<li>Dan Kaminsky - suggestion to use IFRAMEs for multithreading</li>
+			<li>Leif Ryge - suggestions for better input and response UI</li>
+		</ul>
+	</p>
+</div>
 
-<p>- <A href="http://saizai.com">Sai Emrys</A> (saizai)</p>
-
-<p>P.S. Thanks to:
-	<ul>
-		<li>Daniel Bartlett - making an (almost) IE-compatible history hack</li>
-		<li>Michael Chui - pinpointing the damn MSIE failure-to-update-on-href-change bug</li>
-		<li>Alex Fink - better processing algorithms and response UI</li>
-		<li>Jeremiah Grossman - writing the original CSS History Hack!</li>
-		<li>Leif Ryge - suggestions for better input and response UI</li>
-	</ul>
-</p>
-
-<small>
-	<h3>About (for geeks)</h3>
+<div id="geek-about" style="font-size: 80%;">
+	<h3>About CSS Fingerprint (for geeks)</h3>
 	
 	<p>What I store is the cookie value you submit, your user-agent, and, for each of the top ~2-40k Alexa sites (depending on your CPU and internet speed), whether or not you have visited that site.</p>
 	
@@ -75,23 +95,21 @@
 	
 	<p>How it works:
 		<ol>
-			<li>Scrape <a href="http://www.alexa.com/topsites">Alexa</a>'s <a href="http://s3.amazonaws.com/alexa-static/top-1m.csv.zip">1M top sites list</a> and Technorati's <a href="://technorati.com/blogs/top100">top 100 blogs list</a> once per day, insert in db</li>
-			<li>When form is submitted, find/create a user for the cookie, execute the result</li>
+			<li>Scrape <a href="http://www.alexa.com/topsites">Alexa</a>'s <a href="http://s3.amazonaws.com/alexa-static/top-1m.csv.zip">1M top sites list</a> and Technorati's <a href="http://technorati.com/blogs/top100">top 100 blogs list</a> once per day, insert in db</li>
+			<li>When form is submitted, find/create a user for the cookie, execute the result in <%= THREADS %> parallel iframes</li>
 			<li>Form result is code to test a given batch of URLs (500 at a time) and fetch the next one</li>
-			<li>The test is based on Jeremiah Grossman's CSS history hack with Daniel Bartlett's modification for IE compatibility. It inserts a link into the DOM, and checks whether it's colored like the stylesheet says visited links should be. It checks http/https and bare/www. URLs. It uploads the results to the server.</li>
+			<li>The test is based on Jeremiah Grossman's CSS history hack with Daniel Bartlett's modification for IE compatibility. It inserts a link into the DOM, and checks whether it's styled like the stylesheet says visited links should be. It checks http/https and bare/www. URLs.</li>
+			<li>Client uploads the results to the server, recursion happens.</li>
 			<li>Server cuts off client after 60 seconds, processes all the data in the background to speed things up</li>
 		</ol>
 	</p>
 	
-	<p>Known issues:
+	<p><a id="bugs">Known issues</a>:
 		<ol>
-			<li><s>Step 2 above doesn't always work, especially on the first page load; it'll load and execute one batch, but not the next one. I have no good idea why and can't replicate it locally.</s></li>
 			<li>Alexa top sites list has some glaringly missing things (e.g. mail.google.com, reader.google.com), and the hit rate is consequently rather low (~1% or less). I probably need to supplement it with some other list(s). Suggestions appreciated.</li>
-			<li><s>MSIE</s>, Android Safari, NT 5.1 Firefox, Konqueror, and <s>iPhone/iPad</s> have not yet worked. Probably something wrong with the getComputedStyle / currentStyle method in the scraper. Patches welcome.</li>
-			<li>In some circumstances - again as yet completely unclear - even known visited sites on known supported browsers (e.g. OSX Firefox) don't appear as hits. This may be because my JS scraper has a bug, or because of some browser behavior.</li>
-			<li>My current AI models really really suck. Like, worse than chance. I don't know if this is because the data is poor (~2-33 hits per scraping) or because the AI has an issue.</li>
+			<li>Android Safari, NT 5.1 Firefox, and Konqueror have not yet worked. Probably something wrong with the getComputedStyle / currentStyle method in the scraper. Patches welcome.</li>
+			<li>Lynx, and other browsers that do not fully support CSS/Javascript, will <i>not</i> work correctly. This is not fixable.</li>
+			<li>In some circumstances even known visited sites on known supported browsers (e.g. OSX Firefox) don't appear as hits. This may be because my JS scraper has a bug, or because of some browser behavior.</li>
 		</ol>
 	</p>
-	
-	<p>Please do not slashdot this just yet, as it's not ready for the traffic.</p>
-</small>
+</div>

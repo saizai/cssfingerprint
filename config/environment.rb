@@ -50,3 +50,5 @@ end
 
 WEBSTER = Webster.new # Random word generator
 Workling::Return::Store.instance = Workling::Return::Store::StarlingReturnStore.new
+
+THREADS = 4 # client scraping threads to run
