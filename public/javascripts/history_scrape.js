@@ -21,7 +21,7 @@ CSSHistory.prep = function() {
 	document.write('</style>');	
 };
 
-CSSHistory.check = function(url) {
+CSSHistory.check_IE = function(url) {
 	var found = false;
 	var prefixes = ['http://', 'https://', 'http://www.', 'https://www.'];
 	var hex_color = '#ff0000'
@@ -45,7 +45,7 @@ CSSHistory.check = function(url) {
 		link.href = prefixes[i] + url;
 	    
 		// Version 2 - modified from AttackAPI
-		if (link.currentStyle) {
+		if (link.currentStyle) { // IE
 		    found = found || (link.currentStyle['display'] == 'none');
 	    } else {
 			found = found || (document.defaultView.getComputedStyle(link, null).getPropertyValue('display') == 'none');
@@ -66,14 +66,99 @@ CSSHistory.check = function(url) {
 	return found;
 };
 
+// For non-IE browsers, we can speed it up by only using a single link for the entire sweep
+CSSHistory.check_NonIE = function(url, link) {
+	var found = false;
+	var prefixes = ['http://', 'https://', 'http://www.', 'https://www.'];
+	var hex_color = '#ff0000'
+	var rgb_color = 'rgb(255, 0, 0)'
+	
+	for (i = 0; !found && (i < prefixes.length); i++) {
+		link.href = prefixes[i] + url;
+		
+		// Version 2 - modified from AttackAPI
+		if (link.currentStyle) { // IE
+			found = found || (link.currentStyle['display'] == 'none');
+		} else {
+			found = found || (document.defaultView.getComputedStyle(link, null).getPropertyValue('display') == 'none');
+		}
+	}
+	
+	return found;
+}
+
 // When called, this should probably be wrapped in JSON.stringify() for export back up to AJAX
 CSSHistory.check_batch = function(urls) {
 	result = {};
 	
-	for (var i = 0; i < urls.length; i++) {
-		result[urls[i]] = CSSHistory.check(urls[i]);
-	};
-	
+	if (document.defaultView) { // Non IE - set up a single link to share
+		var link = document.createElement("a");
+		link.className = 'csshistory';
+		for (var i = 0; i < urls.length; i++) {
+			document.body.appendChild(link);
+			result[urls[i]] = CSSHistory.check_NonIE(urls[i], link);
+			document.body.removeChild(link);
+		};
+	} else { // IE - it'll have to redo the link each time
+		for (var i = 0; i < urls.length; i++) {
+			result[urls[i]] = CSSHistory.check_IE(urls[i]);
+		};		
+	}
+
 	return result;
 };
 
+ var timeDiff  =  {
+    setStartTime:function (){
+        d = new Date();
+        time  = d.getTime();
+    },
+
+    getDiff:function (){
+        d = new Date();
+        return (d.getTime()-time);
+    }
+};
+
+CSSHistory.check_batch_with = function(urls, method) {
+	switch(method) {
+		case 'lean':
+			return CSSHistory.check_batch_lean(urls);
+		case 'normal':
+			return CSSHistory.check_batch_normal(urls);
+		case 'heavy':
+			return CSSHistory.check_batch_heavy(urls);
+	} 
+}
+
+CSSHistory.check_batch_lean = function(urls){
+	result = {};
+	var link = document.createElement("a");
+	link.className = 'csshistory';
+	document.body.appendChild(link);
+	for (var i = 0; i < urls.length; i++) {
+		result[urls[i]] = CSSHistory.check_NonIE(urls[i], link);
+	};
+	document.body.removeChild(link);
+	return result;
+}
+
+CSSHistory.check_batch_normal = function(urls){
+	result = {};
+	var link = document.createElement("a");
+	link.className = 'csshistory';
+	for (var i = 0; i < urls.length; i++) {
+		document.body.appendChild(link);
+		result[urls[i]] = CSSHistory.check_NonIE(urls[i], link);
+		document.body.removeChild(link);
+	};
+	return result;
+}
+
+CSSHistory.check_batch_heavy = function(urls) {
+	result = {};
+	for (var i = 0; i < urls.length; i++) {
+		result[urls[i]] = CSSHistory.check_IE(urls[i]);
+	};		
+	return result;
+};

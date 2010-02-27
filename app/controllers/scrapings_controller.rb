@@ -1,6 +1,6 @@
 class ScrapingsController < ApplicationController
   def new
-    session[:scraping_id] = nil
+    [:scraping_id, :scraping_start, :user_id, :scraping, :finished_threads, :final_offset].map {|x| session[x] = nil; session.delete x}
   end
   
   def create
@@ -26,21 +26,28 @@ class ScrapingsController < ApplicationController
     
     session[:user_id] = @current_user.id
     cookies[:remember_token] = params[:cookie]
-    session[:scraping_id]  = @current_user.scrapings.create(:user_agent => request.env["HTTP_USER_AGENT"]).id
+    session[:scraping_id]  = scraping_id = @current_user.scrapings.create(:user_agent => request.env["HTTP_USER_AGENT"]).id
+    Rails.cache.write "scraping_#{scraping_id}_total", 0
+    Rails.cache.write "scraping_#{scraping_id}_threads", 0
     session[:scraping_start] = Time.now
     
     render '/scrapings/spawn_scrapers.js.erb'
   end
   
   def results
-    if session[:scraping_id].blank?
-      head :ok
-      return
-    end
+ logger.info session.inspect
+    total = Rails.cache.increment("scraping_#{session[:scraping_id]}_total", 0)
+    finished_threads = Rails.cache.increment("scraping_#{session[:scraping_id]}_threads", 0)
+    
+#    if (total < 1) and !(finished_threads > 0)
+#      head :ok
+#      return
+#    end
     
     @scraping = @current_user.scrapings.find(session[:scraping_id])
     
-    if Workling.return.get(@current_user.job_id)
+    # note: Rails.cache.read seems to return nil when increment,0 returns the correct value. Not sure why, not worth the time to debug
+    if finished_threads > 0 # == effective_threads
       @sites = @scraping.found_sites.find(:all, :select => :url).map(&:url)
       @unfound_sites = @scraping.unfound_sites.find(:all, :select => :url).map(&:url)
       pv = @current_user.probability_vector
@@ -53,11 +60,9 @@ class ScrapingsController < ApplicationController
       end
     else
       render :update do |page|
-        page['status'].replace_html "Processing... #{@scraping.found_visitations_count} hits found of #{@scraping.visitations_count} processed so far"
+        page['status'].replace_html "Processing... #{@scraping.found_visitations_count} hits found of #{@scraping.visitations_count} processed so far of #{total}"
       end
     end
-rescue => e
-  render :inline => session.inspect + e.inspect + @current_user.inspect
   end
 end
  

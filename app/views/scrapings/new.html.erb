@@ -30,7 +30,8 @@
 		
 		<%= periodically_call_remote :frequency => 2, :condition => "completed == false", :url => results_scrapings_url(), :method => :get %>
 	</div>
-
+	
+	
 	<p>When you hit the submit button, you'll see "Testing sites 1 through 501...", increasing rapidly 500 at a time, ending with a "Done!" message and a display of your stats. It will take 60 seconds, and scrape about 3k-20k URLs.</p>
 	<p>If you get &lt;1000 URLs scraped or 0 hits, or it otherwise behaves oddly, please reload and resubmit. If that doesn't fix it, please IM me ASAP (AIM saizai) so I can debug it. Thanks!</p>
 	<p><small>There are a few <a href="#bugs">known bugs</a>.</small></p>
@@ -44,6 +45,41 @@
 			completed = true; // will be falsified by the spawner
 		});
 	</script>
+</div>
+
+<div id="selftest">
+	<h4>Self test</h4>
+	<p>Browsers each have idiosyncracies and require different methods to test efficiently. Here are the results of yours.</p>
+	<p>A correct test should say true for cssfingerprint.com, false for the garbage, and true for google if you actually use this browser at all.</p>
+	
+	<table>
+		<script>
+			document.write("<tr><th>Method</th>");
+			var selftest_urls = ['cssfingerprint.com','google.com', 'adfkljalksdflaesw.com'];
+			for(var i = 0; i < selftest_urls.length; i++) {
+				document.write("<th>" + selftest_urls[i] + "</th>");
+			}
+			document.write("</tr>");
+			
+			<% methods = ['lean','normal','heavy'] %>
+			var results = {};
+			<% methods.each do |m| %>
+				document.write("<tr><td>" + "<%=m%>" + "</td>");
+				results[ "<%=m%>"] = CSSHistory.check_batch_with(selftest_urls, "<%=m%>");
+				for(var j = 0; j < selftest_urls.length; j++) {
+					document.write("<td>" + results[ "<%=m%>"][selftest_urls[j]] + "</td>");
+				}
+			<% end %>
+			document.write("</tr>");
+		</script>
+	</table>
+	
+	<div id="selftest_status"></div>
+	<%= button_to_remote "Report results", {:url => browser_tests_url, :method => :post, :with => "'results=' + JSON.stringify(results)", :update => 'selftest_status',
+			:loading => "$('selftest_report').disable();"}, {:id => 'selftest_report'}  %>
+	
+	<p>Reporting your results for this test only tells the server your user-agent and the information in the table above; it doesn't test any other URLs. 
+	This will help me to create better scraping methods.</p>
 </div>
 
 <div id="about">

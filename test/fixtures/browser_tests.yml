@@ -1,0 +1,13 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  method: MyString
+  result: false
+  url: MyString
+  user_agent: MyString
+
+two:
+  method: MyString
+  result: false
+  url: MyString
+  user_agent: MyString
