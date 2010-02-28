@@ -11,6 +11,9 @@
 	</head>
 
 	<body> 
+   <script>
+     var $j = jQuery.noConflict(); // let Prototype keep $(); will use jQuery with $j(). See http://docs.jquery.com/Using_jQuery_with_Other_Libraries
+</script>
 		<%= yield %>
 	</body> 
 </html>

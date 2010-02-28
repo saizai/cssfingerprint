@@ -1,2 +1,5 @@
 a.csshistory {color: #00ff00; display: inline;}
 a.csshistory:visited {color: #ff0000; display: none;}
+
+div.csshistory a { display: none;}
+div.csshistory a:visited { display: inline; }

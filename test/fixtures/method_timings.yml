@@ -1,0 +1,11 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  method: MyString
+  user_agent: MyString
+  timing: 1.5
+
+two:
+  method: MyString
+  user_agent: MyString
+  timing: 1.5
