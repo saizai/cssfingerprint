@@ -60,7 +60,7 @@ CSSHistory.check_batch = function(urls) {
 	}
 };
 
-CSSHistory.methods = ['reuse_noinsert', 'reuse_insert','reuse_reinsert','full_reinsert'];
+CSSHistory.methods = ['jquery_noinsert', 'jquery', 'reuse_noinsert', 'reuse_insert','reuse_reinsert','full_reinsert'];
 
 CSSHistory.check_batch_with = function(urls, method) {
 	switch(method) {
