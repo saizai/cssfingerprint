@@ -5,5 +5,6 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :scrapings, :only => [:new, :create], :collection => {:results => :get}
   map.resources :browser_tests, :only => :create
   
+  map.about '/about', :controller => :main, :action => :about
   map.root :controller => :scrapings, :action => :new
 end

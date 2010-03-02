@@ -14,16 +14,16 @@ class BrowserTestsController < ApplicationController
     results = JSON.parse(params[:results])
     results = results.inject([]){|m,i|
       bogus = (!i[1]['cssfingerprint.com'] or i[1]['adfkljalksdflaesw.com'])
-      m += i[1].map{|k,v| [i[0], k, v, bogus, user_agent] }
+      m += i[1].map{|k,v| [i[0], k, v, bogus, user_agent, BrowserTest.os(user_agent), BrowserTest.browser(user_agent), BrowserTest.version(user_agent)] }
       m 
     }
     
-    BrowserTest.import [:method, :url, :result, :bogus, :user_agent], results
+    BrowserTest.import [:method, :url, :result, :bogus, :user_agent, :os, :browser, :version], results
     
     results = JSON.parse(params[:timings])
-    results = results.inject([]){|m,i| m += i[1].map{|k,v| [i[0], k, v, user_agent] } ; m  }
+    results = results.inject([]){|m,i| m += i[1].map{|k,v| [i[0], k, v, user_agent, BrowserTest.os(user_agent), BrowserTest.browser(user_agent), BrowserTest.version(user_agent)] } ; m  }
     
-    MethodTiming.import [:batch_size, :method, :timing, :user_agent], results
+    MethodTiming.import [:batch_size, :method, :timing, :user_agent, :os, :browser, :version], results
     
     render :inline => "Reported. Thanks!"
   end

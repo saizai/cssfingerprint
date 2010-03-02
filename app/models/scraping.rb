@@ -11,4 +11,9 @@ class Scraping < ActiveRecord::Base
   def self.failed_agents
     Scraping.find(:all, :group => 'user_agent', :select => 'max(found_visitations_count) as maxfvc, user_agent', :having => 'maxfvc = 0').map(&:user_agent).sort
   end
+  
+  before_save :split_agent
+  def split_agent
+    BrowserTest.split_agent_for self
+  end
 end

@@ -35,7 +35,7 @@
 	</div>
 	
 	<p><span style="color:red">The results display and threads synchronization is broken now. I'm working on it.</span></p>
-	<p><small>There are a few <a href="#bugs">known bugs</a>.</small></p>
+	<p><small>There are a few <a href="/about#bugs">known bugs</a>.</small></p>
 	
 	<script>
 		// There appears to be an issue that people may be starting the form before the JS is loaded, which prevents the returned AJAX from being executed.
@@ -73,7 +73,7 @@
 			
 			document.write('<td style="text-align:right;">' + batches.join('</td><td style="text-align:right;">') + '</td></tr>');
 			
-			<% methods = ['jquery', 'jquery_noinsert', 'reuse_noinsert', 'reuse_insert','reuse_reinsert','full_reinsert'].sort{rand(3)-1} %>
+			<% methods = METHODS.sort{rand(3)-1} %>
 			var results = {};
 			var timings = {};
 			for (var b = 0; b < batches.size(); b++) {
@@ -114,6 +114,8 @@
 
 <div id="about">
 	<h3>About CSS Fingerprint</h3>
+	
+	<p>Are you a geek? Please read the <%= link_to 'geektastic about page', about_url %> for technical details.</p>
 
 	<p>CSS Fingerprint is a research project inspired by the EFF's <a href="http://panopticlick.eff.org">Panopticlick</a>.</p>
 
@@ -128,51 +130,4 @@
 	<p>Thanks!</p>
 
 	<p>- <A href="http://saizai.com">Sai Emrys</A> (saizai)</p>
-
-	<p>P.S. Thanks to:
-		<ul>
-			<li>Daniel Bartlett - making an (almost) IE-compatible history hack</li>
-			<li>Michael Chui - pinpointing the damn MSIE failure-to-update-on-href-change bug</li>
-			<li>Nick Craver - <a href="http://stackoverflow.com/questions/2351278/css-javascript-get-user-visible-text-of-an-element">pointing</a> to the jQuery :visible psuedoselector</li>
-			<li>Alex Fink - better processing algorithms and response UI</li>
-			<li>Jeremiah Grossman - writing the original CSS History Hack!</li>
-			<li>Dan Kaminsky - suggestion to use IFRAMEs for multithreading</li>
-			<li>Leif Ryge - suggestions for better input and response UI</li>
-			<li>Mike Shaver - the 'grab rendered text' <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=147777#c49">idea</a></li>
-		</ul>
-	</p>
-</div>
-
-<div id="geek-about" style="font-size: 80%;">
-	<h3>About CSS Fingerprint (for geeks)</h3>
-	
-	<p>What I store is the cookie value you submit, your user-agent, and, for each of the top ~2-40k Alexa sites (depending on your CPU and internet speed), whether or not you have visited that site.</p>
-	
-	<p>I make no attempt to find out who you are personally, and I don't store your IP (except temporarily in log files).</p>
-	
-	<p>The point of this is simply to tell whether I can automatically identify when you visit again with a different browser. To do that, I need training/test data to feed my AI to tell it authoritatively whether two scrapings are the same user or not.</p>
-	 <p>Currently, I'm testing naive Bayes, SVD, and SVM; if you have suggestions for other methods or tweaks to what I'm doing now, please check out the repo and email me.</p>
-	
-	<p>The data will not be shared with anyone except other EFF-friendly researchers who agree to keep it confidential.</p>
-	
-	<p>The source code is available at <A href="http://github.com/saizai/cssfingerprint">github</A>. Commits welcome.</p>
-	
-	<p>How it works:
-		<ol>
-			<li>Scrape <a href="http://www.alexa.com/topsites">Alexa</a>'s <a href="http://s3.amazonaws.com/alexa-static/top-1m.csv.zip">1M top sites list</a> and Technorati's <a href="http://technorati.com/blogs/top100">top 100 blogs list</a> once per day, insert in db</li>
-			<li>When form is submitted, find/create a user for the cookie, execute the result in <%= THREADS %> parallel iframes</li>
-			<li>Form result is code to test a given batch of URLs (500 at a time) and fetch the next one</li>
-			<li>The test is based on Jeremiah Grossman's CSS history hack with Daniel Bartlett's modification for IE compatibility. It inserts a link into the DOM, and checks whether it's styled like the stylesheet says visited links should be. It checks http/https and bare/www. URLs.</li>
-			<li>Client uploads the results to the server, recursion happens.</li>
-			<li>Server cuts off client after 60 seconds, processes all the data in the background to speed things up</li>
-		</ol>
-	</p>
-	
-	<p><a id="bugs">Known issues</a>:
-		<ol>
-			<li>Alexa top sites list has some glaringly missing things (e.g. mail.google.com, reader.google.com), and the hit rate is consequently rather low (~1% or less). I probably need to supplement it with some other list(s). Suggestions appreciated.</li>
-			<li>Lynx, and other browsers that do not fully support CSS/Javascript, will <i>not</i> work correctly. This is not fixable.</li>
-			<li>In some circumstances even known visited sites on known supported browsers (e.g. OSX Firefox) don't appear as hits. This may be because my JS scraper has a bug, or because of some browser behavior (e.g. use of a history-blocking plugin).</li>
-		</ol>
-	</p>
 </div>
