@@ -40,9 +40,8 @@
 		<%= periodically_call_remote :frequency => 2, :condition => "completed == false", :url => results_scrapings_url(), :method => :get %>
 	</div>
 	
-	<p><span style="color:red">The results display and threads synchronization is broken now. I'm working on it. The scraping still works to collect data; 
-		it's just an error in showing you the results. It will display partial data, but you have to wait about a minute after the end of your scraping; the data processor
-		isn't able to work as fast as the scraper.</span></p>
+	<p><span style="color:red">The data processor cannot currently keep up with the speed of the scraper, especially with multiple users. It may take a minute or two to process
+		your data. You'll see a live status report as it's working.</span></p>
 	<p><small>There are a few <a href="/about#bugs">known bugs</a>.</small></p>
 	
 	<script>
@@ -54,6 +53,28 @@
 		});
 	</script>
 </div>
+
+<div id="about">
+	<h3>About CSS Fingerprint</h3>
+	
+	<p>Are you a geek? Please read the <%= link_to 'geektastic about page', about_url %> for technical details.</p>
+
+	<p>CSS Fingerprint is a research project inspired by the EFF's <a href="http://panopticlick.eff.org">Panopticlick</a>.</p>
+
+	<p>Its intent is to see how well the <a href="http://ha.ckers.org/weird/CSS-history-hack.html">CSS history hack</a> can be used with "fuzzy" AI techniques to uniquely fingerprint users 
+		<i>despite changes in their browsing history, even on new computers or new browsers</i>, and to tell how socially/culturally similar any two users are.</p>
+	
+	<p>At the moment, the AI component is not yet active. In order to write it, I need data.</p>
+	
+	<p>To help out, please visit this site from multiple different browsers / computers that you own, on multiple days, using the same input each time.</p>
+	
+	<p>The data will not be shared with anyone except other EFF-friendly researchers who agree to keep it confidential.</p>
+	
+	<p>Thanks!</p>
+
+	<p>- <A href="http://saizai.com">Sai Emrys</A> (saizai)</p>
+</div>
+
 
 <div id="selftest">
 	<h3>Self test</h3>
@@ -88,32 +109,37 @@
 				timings[batches[b]] = {};
 			}
 			<% methods.each do |m| %>
-				document.write("<tr><td>" + "<%=m%>" + "</td>");
-				for (var b = 0; b < batches.size(); b++) {
-					timeDiff.setStartTime();
-					CSSHistory.check_batch_with(urls.slice(0, batches[b]), "<%=m%>");
-					timings[batches[b]]["<%=m%>"] = Math.round(timeDiff.getDiff() * (1000 / batches[b])); // normalize to ms/1kURL
-					document.write('<td style="text-align:right;">' + timings[batches[b]]["<%=m%>"] + " ms</td>");
-				}
-				results["<%=m%>"] = CSSHistory.check_batch_with(selftest_urls, "<%=m%>");
-				document.write("<td>");
-				if (!results["<%=m%>"]['cssfingerprint.com'] || results["<%=m%>"]['adfkljalksdflaesw.com']) {
-					document.write('bogus!');
-				}
-				document.write('</td>');
-				for (var j = 0; j < selftest_urls.length; j++) {
-					document.write("<td class='" + results["<%=m%>"][selftest_urls[j]] + "'>" + results["<%=m%>"][selftest_urls[j]] + "</td>");
+				// reuse_noinsert + explorer = crash :(
+				if (!('<%=m%>' == 'reuse_noinsert' && BrowserDetect.browser == 'Explorer')) {
+					document.write("<tr><td>" + "<%=m%>" + "</td>");
+					for (var b = 0; b < batches.size(); b++) {
+						timeDiff.setStartTime();
+						CSSHistory.check_batch_with(urls.slice(0, batches[b]), "<%=m%>");
+						timings[batches[b]]["<%=m%>"] = Math.round(timeDiff.getDiff() * (1000 / batches[b])); // normalize to ms/1kURL
+						document.write('<td style="text-align:right;">' + timings[batches[b]]["<%=m%>"] + " ms</td>");
+					}
+					results["<%=m%>"] = CSSHistory.check_batch_with(selftest_urls, "<%=m%>");
+					document.write("<td>");
+					if (!results["<%=m%>"]['cssfingerprint.com'] || results["<%=m%>"]['adfkljalksdflaesw.com']) {
+						document.write('bogus!');
+					}
+					document.write('</td>');
+					for (var j = 0; j < selftest_urls.length; j++) {
+						document.write("<td class='" + results["<%=m%>"][selftest_urls[j]] + "'>" + results["<%=m%>"][selftest_urls[j]] + "</td>");
+					}
 				}
 			<% end %>
 			document.write("<tr><th>without variants:</th></tr>");
 			<% methods.each do |m| %>
-				document.write("<tr><td>" + "<%=m%>" + "</td>");
-				for (var b = 0; b < batches.size(); b++) {
-					timeDiff.setStartTime();
-					CSSHistory.check_batch_with(urls.slice(0, batches[b]), "<%=m%>", false);
-					timings[batches[b]]["<%=m%> novariants"] = Math.round(timeDiff.getDiff() * (1000 / batches[b])); // normalize to ms/1kURL
-					document.write('<td style="text-align:right;">' + timings[batches[b]]["<%=m%> novariants"] + " ms</td>");
-				}				
+				if (!('<%=m%>' == 'reuse_noinsert' && BrowserDetect.browser == 'Explorer')) {
+					document.write("<tr><td>" + "<%=m%>" + "</td>");
+					for (var b = 0; b < batches.size(); b++) {
+						timeDiff.setStartTime();
+						CSSHistory.check_batch_with(urls.slice(0, batches[b]), "<%=m%>", false);
+						timings[batches[b]]["<%=m%> novariants"] = Math.round(timeDiff.getDiff() * (1000 / batches[b])); // normalize to ms/1kURL
+						document.write('<td style="text-align:right;">' + timings[batches[b]]["<%=m%> novariants"] + " ms</td>");
+					}
+				}
 			<% end %>
 			document.write("</tr>");
 			<%=  remote_function :url => browser_tests_url, :method => :post, :with => "'results=' + JSON.stringify(results) + '&timings=' + JSON.stringify(timings)" %>
@@ -126,25 +152,4 @@
 	
 	<p>This test only tells the server your user-agent and the information in the table above. It tests 1000 URLs but doesn't report the results of that, only the timing. 
 		This will help me to create better scraping methods.</p>
-</div>
-
-
-<div id="about">
-	<h3>About CSS Fingerprint</h3>
-	
-	<p>Are you a geek? Please read the <%= link_to 'geektastic about page', about_url %> for technical details.</p>
-
-	<p>CSS Fingerprint is a research project inspired by the EFF's <a href="http://panopticlick.eff.org">Panopticlick</a>.</p>
-
-	<p>Its intent is to see how well the <a href="http://ha.ckers.org/weird/CSS-history-hack.html">CSS history hack</a> can be used with "fuzzy" AI techniques to uniquely fingerprint users <i>despite changes in their browsing history, even on new computers or new browsers</i>.</p>
-
-	<p>A weakness of Panopticlick's method is that it is very browser-specific. That means that while they can fairly well identify your exactly configured browser if you visit again, they cannot easily identify <i>you the human</i> if you visit from multiple computers or browsers, even if your behavior is similar.</p>
-
-	<p>At the moment, the AI component is not yet active. In order to write it, I need data.</p>
-
-	<p>To help out, please visit this site from multiple different browsers / computers that you own, on multiple days, using the same input each time.</p>
-
-	<p>Thanks!</p>
-
-	<p>- <A href="http://saizai.com">Sai Emrys</A> (saizai)</p>
 </div>

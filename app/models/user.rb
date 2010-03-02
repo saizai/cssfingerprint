@@ -8,6 +8,13 @@ class User < ActiveRecord::Base
   validates_presence_of :cookie
   validates_uniqueness_of :cookie
   
+  before_validation :wipe_blanks
+  
+  def wipe_blanks
+    self.name = nil if name.blank?
+    self.email = nil if email.blank?
+  end
+  
   def probability_vector
     found_site_ids = found_visitations.find(:all, :select => 'site_id').map(&:site_id)
     visitations.find(:all, :group => 'site_id', :select => 'site_id, AVG(visited) as prob',

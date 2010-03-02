@@ -1,4 +1,4 @@
-<%= javascript_tag "top.document.getElementById('status_#{@thread_id}').update('Testing sites #{@offset + 1} through #{@limit+@offset}...');" %>
-<%= javascript_tag remote_function(:url => visitations_url(:limit => @limit, :offset => @offset, :thread_id => @thread_id ), :method => :post, 
+<%= javascript_tag "top.document.getElementById('status_#{@thread_id}').update('Testing sites #{@offset + 1} through #{@scraping.batch_size+@offset}...');" %>
+<%= javascript_tag remote_function(:url => visitations_url(:thread_id => @thread_id ), :method => :post, 
 		:with => "'results=' + JSON.stringify(CSSHistory.check_batch(#{@sites.map(&:url).to_json}))" )
 %>

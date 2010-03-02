@@ -1,4 +1,3 @@
-<!--
 /*
 
 This javascript is used to run the CSS history hack in production.
@@ -48,22 +47,47 @@ CSSHistory.test = function(link) {
 };
 
 // When called, this should probably be wrapped in JSON.stringify() for export back up to AJAX
+// Some browsers (versions? OSes? plugins?) return bogus results even with methods that are known working for the browser as a whole.
+// I have no idea why, yet.
+// However, to correct for this, we make sure the method selftests as nonbogus before using it for the real scrape, falling through to other methods if it doesn't
+// If all methods are bogus, then return nothing
 CSSHistory.check_batch = function(urls, with_variants) {
 	switch(BrowserDetect.browser) {
-		case 'Mozilla': // ~400kURL/min
-		case 'Firefox': // ~210kURL/min
-			return CSSHistory.check_batch_with(urls, 'reuse_noinsert', with_variants); // Firefox is ~28% faster w/ reuse_noisert vs jquery
-		
 		case 'Opera': // ~210kURL/min
 		case 'Chrome': // ~2MURL/min (!!)
-			return CSSHistory.check_batch_with(urls, 'reuse_insert', with_variants);
+			if (CSSHistory.selftest('reuse_insert'))
+				return CSSHistory.check_batch_with(urls, 'reuse_insert', with_variants);
+		
+		case 'Mozilla': // ~400kURL/min
+		case 'Firefox': // ~210kURL/min
+			if (CSSHistory.selftest('reuse_noinsert'))
+				return CSSHistory.check_batch_with(urls, 'reuse_noinsert', with_variants);
 		
 		case 'Explorer': // ~200kURL/min 
 		case 'Safari': // ~3.4MURL/min (!!!)
 		default:
-			return CSSHistory.check_batch_with(urls, 'jquery', with_variants); // Safari is ~4x faster using jquery vs reuse_reinsert; reuse_noinsert fails on safari
+			if (CSSHistory.selftest('jquery'))
+				return CSSHistory.check_batch_with(urls, 'jquery', with_variants);
+			if (CSSHistory.selftest('reuse_noinsert'))
+				return CSSHistory.check_batch_with(urls, 'reuse_noinsert', with_variants);
+			if (CSSHistory.selftest('reuse_insert'))
+				return CSSHistory.check_batch_with(urls, 'reuse_insert', with_variants);
+			if (CSSHistory.selftest('reuse_reinsert'))
+				return CSSHistory.check_batch_with(urls, 'reuse_reinsert', with_variants);
+			if (CSSHistory.selftest('full_insert'))
+				return CSSHistory.check_batch_with(urls, 'full_insert', with_variants);
+			
+			// If it ever hits this, then all tests have utterly failed.			
+			return {}
 	}
 };
+
+CSSHistory.selftest = function(method) {
+	// check this site (just visited!) and some random garbage that can't possibly be visited
+	fake_url = hex_md5(String(Math.random() * 50000).replace(/\D/gi,''))
+	result = CSSHistory.check_batch_with(['cssfingerprint.com', ], method)
+	return (result['cssfingerprint.com'] && !result[fake_url])
+}
 
 CSSHistory.methods = ['jquery_noinsert', 'jquery', 'reuse_noinsert', 'reuse_insert','reuse_reinsert','full_reinsert'];
 
@@ -74,7 +98,7 @@ CSSHistory.check_batch_with = function(urls, method, with_variants) {
 			return CSSHistory.check_batch_jquery_noinsert(urls, with_variants);
 		case 'jquery':
 			return CSSHistory.check_batch_jquery(urls, with_variants);
-		case 'reuse_noinsert':
+		case 'reuse_noinsert': // NOTE: reuse_noinsert appears to crash IE in at least some cases. No idea why yet.
 			return CSSHistory.check_batch_reuse_noinsert(urls, with_variants);
 		case 'reuse_insert':
 			return CSSHistory.check_batch_reuse_insert(urls, with_variants);
@@ -100,7 +124,7 @@ CSSHistory.check_batch_jquery = function(urls, with_variants) {
 	var id = hex_md5(String(Math.random() * 50000).replace(/\D/gi,''));
 	div.id = id
 	for(var i =0; i < urls.size(); i++ ){
-		result[urls[i]] = false;
+		result[escape(urls[i])] = false;
 		string_to_insert = string_to_insert + '<a href="http://' + urls[i] + '">' + urls[i] + '</a>' ;
 		if (with_variants !== false) { // false !== but == undefined
 			string_to_insert = string_to_insert + '<a href="https://' + urls[i] + '">' + urls[i] + '</a>';
@@ -114,7 +138,7 @@ CSSHistory.check_batch_jquery = function(urls, with_variants) {
 	document.body.appendChild(div);
 	// ~60 ms
 	$j("#" + id + " :visible").each(function() { // w00t visible selector
-	   result[$j(this).text()] = true;
+	   result[escape($j(this).text())] = true;
 	});
 	// 13 ms
 	document.body.removeChild(div);
@@ -130,7 +154,7 @@ CSSHistory.check_batch_jquery_noinsert = function(urls, with_variants) {
 	var id = hex_md5(String(Math.random() * 50000).replace(/\D/gi,''));
 	div.id = id
 	for(var i =0; i < urls.size(); i++ ){
-		result[urls[i]] = false;
+		result[escape(urls[i])] = false;
 		string_to_insert = string_to_insert + '<a href="http://' + urls[i] + '">' + urls[i] + '</a>';
 		if (with_variants !== false) {
 			string_to_insert = string_to_insert + '<a href="https://' + urls[i] + '">' + urls[i] + '</a>';
@@ -140,7 +164,7 @@ CSSHistory.check_batch_jquery_noinsert = function(urls, with_variants) {
 	}
 	div.innerHTML = string_to_insert;
 	$j("#" + id + " :visible").each(function() { // w00t visible selector
-	   result[$j(this).text()] = true;
+	   result[escape($j(this).text())] = true;
 	});
 	return result
 }
@@ -160,7 +184,7 @@ CSSHistory.check_batch_reuse_noinsert = function(urls, with_variants){
 			j++;
 		} while (!found && (j < CSSHistory.prefixes.length) && (with_variants !== false))
 		
-		result[urls[i]] = found;
+		result[escape(urls[i])] = found;
 	};
 	return result;
 };
@@ -181,7 +205,8 @@ CSSHistory.check_batch_reuse_insert = function(urls, with_variants){
 			j++;
 		} while (!found && (j < CSSHistory.prefixes.length) && (with_variants !== false))
 		
-		result[urls[i]] = found;
+		result[escape(urls[i])] = found;
+
 	};
 	document.body.removeChild(link);
 	return result;
@@ -204,7 +229,7 @@ CSSHistory.check_batch_reuse_reinsert = function(urls, with_variants){
 			j++;
 		} while (!found && (j < CSSHistory.prefixes.length) && (with_variants !== false))
 		
-		result[urls[i]] = found;
+		result[escape(urls[i])] = found;
 	};
 	return result;
 };
@@ -226,7 +251,7 @@ CSSHistory.check_batch_full_reinsert = function(urls, with_variants) {
 			j++;
 		} while (!found && (j < CSSHistory.prefixes.length) && (with_variants !== false))
 		
-		result[urls[i]] = found;
+		result[escape(urls[i])] = found;
 	};		
 	return result;
 };

@@ -23,7 +23,7 @@
 <p>Right now, other components of the app aren't able to actually keep up with that speed:
 <ul>
 	<li>network i/o needs a lot of optimization</li>
-	<li>the background processing has a synch bug (and is overwhelmed by the front-end speed)</li>
+	<li>the background processing can't keep up with the scraper</li>
 	<li>I am still processing *all* the data and not just the hits because the way it's set up doesn't let me easily compress that info (... trying to insert ~3-50k rows per second in mysql is
 		kinda overtaxing my dev box)</li>
 	<li>I need to totally redo the way I'm choosing which URLs to test to be intelligent (right now I'm just using the Alexa db, rather than scraping my own and using a bootstrapping method).</li>

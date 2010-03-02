@@ -9,9 +9,9 @@
 	
 	<p>The point of this is simply to tell whether I can automatically identify when you visit again with a different browser. To do that, I need training/test data to feed my AI to tell it authoritatively whether two scrapings are the same user or not.</p>
 	 <p>Currently, I'm testing naive Bayes, SVD, and SVM; if you have suggestions for other methods or tweaks to what I'm doing now, please check out the repo and email me.</p>
-	
-	<p>The data will not be shared with anyone except other EFF-friendly researchers who agree to keep it confidential.</p>
-	
+	 
+	<p>A weakness of Panopticlick's method is that it is very browser-specific. That means that while they can fairly well identify your exactly configured browser if you visit again, they cannot easily identify <i>you the human</i> if you visit from multiple computers or browsers, even if your behavior is similar.</p>
+		
 	<p>The source code is available at <A href="http://github.com/saizai/cssfingerprint">github</A>. Commits welcome.</p>
 </div>
 

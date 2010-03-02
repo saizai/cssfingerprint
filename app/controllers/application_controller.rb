@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
 
   # Scrub sensitive parameters from your log
-  filter_parameter_logging :results
+  filter_parameter_logging :results, :timings, :cookie, :name, :email
   
   before_filter :get_user
   

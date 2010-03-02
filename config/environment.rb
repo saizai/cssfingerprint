@@ -62,3 +62,6 @@ i = 0
 HUES = METHODS.inject({}){|m, method| m[method] = (0 + (i * 1.0 / METHODS.count)) % 1.0; i += 1; m } # 0 = base hue
 i = 0
 LUMINOSITIES = USER_AGENTS.inject({}){|m, method| m[method] = (i * 0.5 / (USER_AGENTS.count - 1)) + 0.25; i += 1; m }
+
+WORKLING_CLIENT = Workling::Clients::MemcacheQueueClient.new
+WORKLING_CLIENT.connect
