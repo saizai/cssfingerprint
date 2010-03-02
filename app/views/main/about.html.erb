@@ -1,0 +1,77 @@
+<div id="intro" >
+	<h3>About CSS Fingerprint (for geeks)</h3>
+	
+	<p>What I store is the cookie value you submit, your user-agent, and, for each of the top ~2-40k Alexa sites (depending on your CPU and internet speed), whether or not you have visited that site.</p>
+	
+	<p>I make no attempt to find out who you are personally, and I don't store your IP (except temporarily in log files).</p>
+	
+	<p>The point of this is simply to tell whether I can automatically identify when you visit again with a different browser. To do that, I need training/test data to feed my AI to tell it authoritatively whether two scrapings are the same user or not.</p>
+	 <p>Currently, I'm testing naive Bayes, SVD, and SVM; if you have suggestions for other methods or tweaks to what I'm doing now, please check out the repo and email me.</p>
+	
+	<p>The data will not be shared with anyone except other EFF-friendly researchers who agree to keep it confidential.</p>
+	
+	<p>The source code is available at <A href="http://github.com/saizai/cssfingerprint">github</A>. Commits welcome.</p>
+</div>
+
+<div id="method">
+	<h3>How it works</h3>
+	<ol>
+		<li>Scrape <a href="http://www.alexa.com/topsites">Alexa</a>'s <a href="http://s3.amazonaws.com/alexa-static/top-1m.csv.zip">1M top sites list</a> and Technorati's <a href="http://technorati.com/blogs/top100">top 100 blogs list</a> once per day, insert in db</li>
+		<li>When form is submitted, find/create a user for the cookie, execute the result in <%= THREADS %> parallel iframes</li>
+		<li>Form result is code to test a given batch of URLs (500 at a time) and fetch the next one</li>
+		<li>The test is based on Jeremiah Grossman's CSS history hack with Daniel Bartlett's modification for IE compatibility. It inserts a link into the DOM, and checks whether it's styled like the stylesheet says visited links should be. It checks http/https and bare/www. URLs.</li>
+		<li>Client uploads the results to the server, recursion happens.</li>
+		<li>Server cuts off client after 60 seconds, processes all the data in the background to speed things up</li>
+	</ol>
+</div>
+
+<div id="bugs">	
+	<h3>Known issues</h3>
+	<ol>
+		<li>Alexa top sites list has some glaringly missing things (e.g. mail.google.com, reader.google.com), and the hit rate is consequently rather low (~1% or less). I probably need to supplement it with some other list(s). Suggestions appreciated.</li>
+		<li>Lynx, and other browsers that do not fully support CSS/Javascript, will <i>not</i> work correctly. This is not fixable.</li>
+		<li>In some circumstances even known visited sites on known supported browsers (e.g. OSX Firefox) don't appear as hits. This may be because my JS scraper has a bug, or because of some browser behavior (e.g. use of a history-blocking plugin).</li>
+	</ol>
+</div>
+
+<style>
+	#graphs div p { text-align: center; }
+	#graphs div { float: left; margin-right: 40px; }
+</style>
+<div id="graphs">	
+	<h3>Pretty graphs <small>(all based on live data)</small></h3>
+	
+	<p>All graphs use only non-bogus combinations with >10 samples, and exclude mobile browsers, as they're 10x slower and distort the graph.</p>
+	
+	<p>Hue = method; luminosity = browser. Colors are consistent throughout.
+		Method names are documented in the <A href="http://github.com/saizai/cssfingerprint/blob/master/public/javascripts/history_scrape.js">Javascript source</A>.</p>
+	
+	<div>
+		<p>Effect of batch size on local scraping efficency<br/>
+		<small>higher z-score = slower to process</small>
+		</p>
+		<p><%= image_tag BrowserTest.graph_batch_size %></p>
+	</div>
+	
+	<div>
+		<p>Local sraping efficency of different browsers/methods<br/>
+		<small>might become a whisker plot after I have more data</small></p>
+		<p><%= image_tag BrowserTest.graph_method_timings %></p>
+	</div>
+</div>
+
+<div style="clear:both;"></div>
+
+<div id="thanks">
+	<h3>Thanks to:</h3>
+	<ul>
+		<li>Daniel Bartlett - making an (almost) IE-compatible history hack</li>
+		<li>Michael Chui - pinpointing the damn MSIE failure-to-update-on-href-change bug</li>
+		<li>Nick Craver - <a href="http://stackoverflow.com/questions/2351278/css-javascript-get-user-visible-text-of-an-element">pointing</a> to the jQuery :visible psuedoselector</li>
+		<li>Alex Fink - better processing algorithms and response UI</li>
+		<li>Jeremiah Grossman - writing the original CSS History Hack!</li>
+		<li>Dan Kaminsky - suggestion to use IFRAMEs for multithreading</li>
+		<li>Leif Ryge - suggestions for better input and response UI</li>
+		<li>Mike Shaver - the 'grab rendered text' <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=147777#c49">idea</a></li>
+	</ul>
+</div>
