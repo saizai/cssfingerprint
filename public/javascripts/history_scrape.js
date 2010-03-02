@@ -19,10 +19,13 @@ CSSHistory.rgb_color = 'rgb(255, 0, 0)'
 
 // We need to force the links to a known color value to be able to test them
 CSSHistory.prep = function() {
-	document.write('<style>');
-	document.write('a.csshistory {color: #00ff00; display: inline;}');
-	document.write('a.csshistory:visited {color: #ff0000; display: none;}');
-	document.write('</style>');	
+	stylesheet = "<style> \
+		a.csshistory {color: #00ff00; display: none;} \
+		a.csshistory:visited {color: #ff0000; display: inline;} \
+		div.csshistory a { display: none;} \
+		div.csshistory a:visited { display: inline; } \
+	</style>"
+	document.write(stylesheet);
 };
 
 CSSHistory.test = function(link) {
@@ -30,19 +33,17 @@ CSSHistory.test = function(link) {
 	// Cf. http://www.quirksmode.org/dom/w3c_html.html http://www.quirksmode.org/dom/w3c_css.html 
 	
 	// Version 2 - modified from AttackAPI
-	if (link.currentStyle) { // IE
-	    return (link.currentStyle['display'] == 'none');
-    } else {
-		return (document.defaultView.getComputedStyle(link, null).getPropertyValue('display') == 'none');
-	}
+	if (link.currentStyle) // IE
+	    return link.currentStyle['display'] == 'inline';
+    else
+		return document.defaultView.getComputedStyle(link, null).getPropertyValue('display') == 'inline';
 	
 	/*
 	// Version 1 - modified from the original hack
 	if(document.defaultView)
-		var color = document.defaultView.getComputedStyle(link,null).getPropertyValue("color");
+		return document.defaultView.getComputedStyle(link,null).getPropertyValue("color") == CSSHistory.rgb_color;
 	else // IE
-		var color = link.currentStyle['color'];
-	return (color == CSSHistory.rgb_color) || (color == CSSHistory.hex_color);
+		return link.currentStyle['color'] == CSSHistory.hex_color;
 	*/
 };
 
