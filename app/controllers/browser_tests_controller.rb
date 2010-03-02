@@ -21,9 +21,10 @@ class BrowserTestsController < ApplicationController
     BrowserTest.import [:method, :url, :result, :bogus, :user_agent, :os, :browser, :version], results
     
     results = JSON.parse(params[:timings])
-    results = results.inject([]){|m,i| m += i[1].map{|k,v| [i[0], k, v, user_agent, BrowserTest.os(user_agent), BrowserTest.browser(user_agent), BrowserTest.version(user_agent)] } ; m  }
+    results = results.inject([]){|m,i| m += i[1].map{|k,v| [i[0], k.sub(' novariants',''), !k.include?('novariants'), v, 
+      user_agent, BrowserTest.os(user_agent), BrowserTest.browser(user_agent), BrowserTest.version(user_agent)] } ; m  }
     
-    MethodTiming.import [:batch_size, :method, :timing, :user_agent, :os, :browser, :version], results
+    MethodTiming.import [:batch_size, :method, :with_variants, :timing, :user_agent, :os, :browser, :version], results
     
     render :inline => "Reported. Thanks!"
   end

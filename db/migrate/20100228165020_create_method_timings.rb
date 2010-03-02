@@ -5,6 +5,7 @@ class CreateMethodTimings < ActiveRecord::Migration
       t.string :user_agent
       t.integer :timing # ms per 1kURL
       t.integer :batch_size
+      t.boolean :with_variants, :default => true
       
       t.timestamps
     end

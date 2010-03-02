@@ -8,7 +8,8 @@ class BrowserTest < ActiveRecord::Base
   def self.graph_batch_size
     # iPhone has WAY higher times. Exclude or the graph gets skewed.
     x = ActiveRecord::Base.connection.execute 'select c, avg(bogus) as bog, timing, batch_size, method, browser from browser_tests as b inner join (
-      select count(*) as c, round(avg(timing)) as timing, batch_size, method, browser from method_timings where os != "iPhone/iPod" group by browser, method, batch_size having c > 10) as t
+      select count(*) as c, round(avg(timing)) as timing, batch_size, method, browser from method_timings where os != "iPhone/iPod" and with_variants = 1 
+      group by browser, method, batch_size having c > 10) as t
       using (browser, method) group by browser, method, batch_size having bog < 1 order by browser, method, batch_size;'
     results = []
     x.each_hash{|y| results << y.to_options!} # put it in something that won't disappear after being used, and can be mapped etc
@@ -50,7 +51,7 @@ class BrowserTest < ActiveRecord::Base
     google_url += "&chxt=x,x,y,y&chxr=0,0,#{xmax}" + 
                   "&chm=h,777777,0,#{ sd_range[1] },1|r,DDDDDD,0,#{ sd_range[0] },#{ sd_range[2] }" +
                   "&chxp=1,50|2,#{sd_locations.join(',')}|3,50" +
-                  "&chxl=1:|batch size|2:|#{sd_markers.map{|x| x.to_s + ' σ'}.join('|') }|3:|z-score of duration" # chxr |2,#{ymin},#{ymax},1
+                  "&chxl=1:|batch size|2:|#{sd_markers.map{|x| x.to_s + ' σ'}.join('|') }|3:|z-score" # chxr |2,#{ymin},#{ymax},1
     
     # Legend
     google_url += "&chdl=" + grouped_results.map{|k,v| k}.join('|')
@@ -61,22 +62,23 @@ class BrowserTest < ActiveRecord::Base
     return google_url
   end
   
-  # Bar chart of time to process 1kURLs by method & browser
+  # Bar chart of URLs/min by method & browser
   def self.graph_method_timings
     x = ActiveRecord::Base.connection.execute "select c, avg(bogus) as bog, timing, method, browser from browser_tests as b inner join (
-      select count(*) as c, round(avg(timing)) as timing, method, browser from method_timings where os != 'iPhone/iPod' group by browser, method having c > 10) as t
+      select count(*) as c, round(avg(timing)) as timing, method, browser from method_timings where os != 'iPhone/iPod' and with_variants = 1
+      group by browser, method having c > 10) as t
       using (browser, method) group by browser, method having bog < 1 order by browser, method;"
     results = []
     x.each_hash{|y| results << y.to_options!} # put it in something that won't disappear after being used, and can be mapped etc
     # make it look nice
-    results.map{|x| [:timing, :c].each{|y| x[y] = x[y].to_i}; x[:bog] = x[:bog].to_f;  x }
+    results.map{|x| [:timing, :c].each{|y| x[y] = x[y].to_i}; x[:bog] = x[:bog].to_f; x[:urls] = (60000 / x[:timing]).to_i; x }
     # e.g. {:timing=>492, :bog=>0.0, :method=>"jquery", :browser=>"Explorer", :c=>8}
     
     # grouped vertical bar graph
     google_url = "http://chart.apis.google.com/chart?cht=bvg&chs=750x400"
     
     # Scaling.
-    ymax = results.map{|x|x[:timing]}.max
+    ymax = results.map{|x|x[:urls]}.max
     # google_url += "&chds=0,#{ymax}"
     google_url += "&chbh=a" # automatically scale bar widths
     
@@ -86,7 +88,7 @@ class BrowserTest < ActiveRecord::Base
     methods.each do |m|
       browsers.each do |b|
         if results.select{|x| x[:method] == m and x[:browser] == b}.empty?
-          results << {:browser => b, :method => m} # :timing nil by default
+          results << {:browser => b, :method => m} # :urls nil by default
         end
       end
     end
@@ -96,20 +98,25 @@ class BrowserTest < ActiveRecord::Base
     
     # Simple-encoded data, scaled to 0-61
     google_url += "&chd=s:" + grouped_results.map{|k,v| 
-      v.map{|x| BrowserTest.senc(x[:timing] ? (61.999*x[:timing]/ymax).to_i : 0)}.join # force 0 on nil, so that labels will always be shown 
+      v.map{|x| senc(x[:urls] ? (61.999*x[:urls]/ymax).to_i : nil)}.join 
     }.join(',')
     
     # Axis labels
     google_url += "&chxt=x,y,y&chxr=1,0,#{ymax}" + 
                   "&chxp=2,50" +
-                  "&chxl=2:|ms / 1k URLs|0:|#{methods.join('|')}"
+                  "&chxl=2:|kURLs/min|0:|#{methods.join('|')}"
     
     # Legend
 #    google_url += "&chdl=" + grouped_results.map{|k,v| k}.join('|')
     
-    # annotations
+    # annotations of browsers, tied to their best result
+    bests = browsers.map do |b|
+      r = results.sort_by{|x| x[:browser] + ' / ' + x[:method]}.select{|x|x[:browser]==b }.map{|x|x[:urls]||0}
+      r.index r.max
+    end
+    
     i = -1
-    google_url += "&chm=" + browsers.map{|b| i+=1; 'A' + b + ',000000,' + i.to_s + ',0,16' }.join('|') 
+    google_url += "&chm=" + browsers.map{|b| i+=1; "A#{b},000000,#{i},#{ bests[i] },16" }.join('|') 
     # + "|v,999999,#{ browsers.count },,1,0,sl:15:10" # vertical ticks between bar groups 
     
     # colors

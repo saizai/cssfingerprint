@@ -48,14 +48,16 @@
 	
 	<div>
 		<p>Effect of batch size on local scraping efficency<br/>
-		<small>higher z-score = slower to process</small>
+		<small>higher z-score = slower to process<br/>all batches are x4 variants</small>
 		</p>
 		<p><%= image_tag BrowserTest.graph_batch_size %></p>
 	</div>
 	
 	<div>
 		<p>Local sraping efficency of different browsers/methods<br/>
-		<small>might become a whisker plot after I have more data</small></p>
+		<small>labeled on the best-performing method per browser<br/>
+			all numbers are actually x4 if you don't check http/https x plain/www. variants</small>
+		</p>
 		<p><%= image_tag BrowserTest.graph_method_timings %></p>
 	</div>
 </div>
