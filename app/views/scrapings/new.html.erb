@@ -1,3 +1,5 @@
+<h4><%= link_to "Preliminary results", results_url %> / <%= link_to "Technical details", about_url %></h4>
+
 <div id="participate">
 	<h3>Participate</h3>
 
@@ -25,6 +27,10 @@
 			<br/><span style="color:red;">Please use <b>the same code</b> every time you visit (including from other browsers/computers).</span>
 			</p>
 			<p>Have you visited before? <%= check_box_tag :repeat_user, '1', !cookies[:remember_token].blank? %></p>
+			<p><b>Optional:</b> Name <%= text_field_tag :name %> & email <%= text_field_tag :email %></p>
+			<p>May I show other users your name after they visit, to give them a list of similar users? <%= check_box_tag :release_name %><br/>
+			<small>I will never give anyone your email; it's only in case I want to contact you.
+				The "similar users" feature is not active yet (the AI isn't ready).</small></>
 			<p><%= submit_tag "Fingerprint me", :disabled => true %>
 				<br/>Warning: DO NOT use this from a public computer. This may cause your computer to run slowly for about a minute; it's normal, just be patient.</p>
 		<% end %>
@@ -34,7 +40,9 @@
 		<%= periodically_call_remote :frequency => 2, :condition => "completed == false", :url => results_scrapings_url(), :method => :get %>
 	</div>
 	
-	<p><span style="color:red">The results display and threads synchronization is broken now. I'm working on it.</span></p>
+	<p><span style="color:red">The results display and threads synchronization is broken now. I'm working on it. The scraping still works to collect data; 
+		it's just an error in showing you the results. It will display partial data, but you have to wait about a minute after the end of your scraping; the data processor
+		isn't able to work as fast as the scraper.</span></p>
 	<p><small>There are a few <a href="/about#bugs">known bugs</a>.</small></p>
 	
 	<script>

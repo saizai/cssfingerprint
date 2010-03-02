@@ -14,7 +14,7 @@ class ScrapingsController < ApplicationController
         if @current_user
           @error_msg = "Somebody already used that code. Please enter something more unique!"
         else
-          @current_user = User.create :cookie => params[:cookie]
+          @current_user = User.create :cookie => params[:cookie], :name => params[:name], :email => params[:email], :release_name => params[:release_name]
         end
       end
     end
@@ -23,6 +23,13 @@ class ScrapingsController < ApplicationController
       render '/scrapings/error.js.erb'
       return
     end
+    
+    unless params[:name].blank?
+      @current_user.name = params[:name]
+      @current_user.release_name = params[:release_name]
+    end
+    @current_user.email = params[:email] unless params[:email].blank?
+    @current_user.save
     
     session[:user_id] = @current_user.id
     cookies[:remember_token] = params[:cookie]

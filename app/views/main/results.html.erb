@@ -1,0 +1,76 @@
+<h4><%= link_to "Participation page", root_url %> / <%= link_to "Technical details", about_url %></h4>
+
+<h3>Preliminary results</h3>
+
+<p>After some helpful suggestions, I've improved the javascript scraping engine considerably.
+ It is now compatible with all browsers that render CSS/JS at all (sorry, this doesn't include stuff like lynx).</p>
+
+<p>It is also quite fast, at least locally. Based on current data that let me target specific browsers with different scraping methods, I can process approx:
+<ul>
+	<li>Explorer: 200kURL/min</li>
+	<li>Firefox: 210kURL/min</li>
+	<li>Opera: 210kURL/min</li>
+	<li>Mozilla: 400kURL/min</li>
+	<li>Chrome: 2MURL/min</li>
+	<li><b>Safari: 3.4MURL/min</b></li>
+</ul></p>
+	
+<p>(See the <%= link_to "about page", about_url %> for pretty graphs of the live data. These numbers are /4 if you want to test for http/https and bare/www. variants of each URL.)</p>
+
+<p>I'd like to reiterate that last one. <b>I can test whether you've visited over three million URLs in one minute</b> on Safari. This will be increasingly true on other browsers as 
+ they improve their DOM/JS engines.</p>
+
+<p>Right now, other components of the app aren't able to actually keep up with that speed:
+<ul>
+	<li>network i/o needs a lot of optimization</li>
+	<li>the background processing has a synch bug (and is overwhelmed by the front-end speed)</li>
+	<li>I am still processing *all* the data and not just the hits because the way it's set up doesn't let me easily compress that info (... trying to insert ~3-50k rows per second in mysql is
+		kinda overtaxing my dev box)</li>
+	<li>I need to totally redo the way I'm choosing which URLs to test to be intelligent (right now I'm just using the Alexa db, rather than scraping my own and using a bootstrapping method).</li>
+</ul></p>
+
+<p>So that 3.4M is still a little bit theoretical, and the cost of network i/o alone will bring it down some. But that is only a matter of time, not a matter of it being not possible to do.</p>
+
+<h3>Implications</h3>
+<p>I've been talking with a few people about this (Dan Kaminsky; Peter Eckersley &amp; Seth Schoen of EFF; Gilbert Wondracek &amp; Thorsten Holz of ISecLab), and it seems we're in agreement that
+ this hack was underestimated. Being able to easily query 3M URLs is a whole different ballpark from other things like cache timing attacks.</p>
+
+<p>Gilbert &amp; Thorsten have <a href="http://www.iseclab.org/people/gilbert/experiment">demonstrated</a> that by scraping social network membership data and checking whether you have visited
+	various groups, they can identify pretty well who you are. Their experiment was quite limited in scope - only targetting the Xing network and a small number of volunteers. I'm fairly sure
+	(but have not yet verified) that testing across multiple networks would deanonymize almost everyone who uses social networks at all.</p>
+<p>My research is not aimed at deanonymization (yet?) but at getting a more abstract user fingerprint and a user similarity metric that maps to real world social networks and social behavior.</p>
+<p>I believe that there can be positive, ethical uses of this hack; for instance, a site can use it to provide you with a much more intelligent selection of plausible social matches (both to connect
+	with current people you know and people you would actually like to interact with), without your having to search for individuals directly. It can show you links (more prominently / only) to social 
+	bookmarking sites you actually use. Etc.</p>
+<p>However, there are also serious privacy implications, and like any powerful tool, there are very definitely ways that this could be used to malicious ends.</p>
+<p>There's been some discussion among us of how to mitigate the issue. So far, the ideas are:</p>
+<ul>
+	<li>abandon :visited altogether</li>
+	<li>make visitation be remembered per source domain (not global), so that links visited from site A do not show as visited on site B</li>
+	<li>constrain :visited to only permit color (no background-image, font changes, etc) and lie to JS when it's inspected</li>
+	<li>admit we're all screwed</li>
+</ul>
+<p>Dan thinks that he can get around #3, though I'm a bit skeptical. AFAICT, it would block the attack - but break many sites in the process. (How to balance the tradeoff between functionality and
+ privacy protection? Not my call.) But it's Dan, so I'm not writing it off just yet. ;-)</p>
+<p>Anyway, if you want to be in on the discussion, please email me.</p>
+
+<h3>How to help</h3>
+<p>If you want to help out, please keep visiting <%= link_to "cssfingerprint.com", root_url %> from all your browsers, remembering to use the
+ same code each time for the scraping. (If you don't, my AI will be confused.)</p>
+<p>It will also perform a self-test automatically that just gives me timing and bogosity data (no real history data). You can do this even if you don't want to give me your history info; it will do a
+	lot to help me develop better scraping methods, and you get to see the results of it live on the about page. (Note that it needs to be hit at least 10x by any given browser to show on the graphs, so
+	if I don't have enough hits from yours, you may need to reload the main page a few times before I have enough data. I especially need timing data from Explorer.)</p>
+<p>I've added <b>optional</b> fields to input your name and email. This will help me contact you if I have questions about your info, and if you check the agreement box, let me use it in the future
+	(i.e. once the AI works) to give other users a list of similar users.</p>
+<p>Speaking of the AI: it still sucks really really badly. But I haven't really tried to work on it yet; I've been concentrating more on the scraper and preliminary data analysis for now.</p>
+
+<p>If you want to help out technically, I need help with:
+<ul>
+<li>finding a way to speed up document.body.appendChild(list of ~2000 links)</li>
+<li>hosting this on a slashdot-proof server rather than my dev box at home (requirements: mysql, memcached, starling, rails, and apache w/ mod_ruby [or privs to install them myself]; ssh; spikable RAM)</li>
+<li>scraping the URLs of the most popular pages on and links from all major sites</li>
+<li>developing a method to test whether text with a&nbsp;:visited color styling is colored that way *without* directly inspecting the element with the&nbsp;:visited psuedoclass (e.g. by somehow directly inspecting the text, or a child node)</li>
+<li>writing an AI capable of accurately telling how similar a new visited-sites n-boolean vector is to previously seen ones</li>
+</ul></p>
+<p>The code is at <a href="http://github.com/saizai/cssfingerprint">Github</a>.</p>
+<p>Thanks!</p>
