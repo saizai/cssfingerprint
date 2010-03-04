@@ -12,7 +12,7 @@ class Site < ActiveRecord::Base
     if site_ids
       self.find(:all, :conditions => ['id IN (?)', site_ids], :select => 'id, avg_visited').inject({}){|m,x| m[x.id] = -x.avg_visited; m}
     else
-      self.find(:all, :select => 'id, avg_visited').inject({}){|m,x| m[x.id] = -x.avg_visited; m}
+      self.find(:all, :conditions => 'visited_users_count > 0', :select => 'id, avg_visited').inject({}){|m,x| m[x.id] = -x.avg_visited; m}
     end
   end
   
@@ -20,7 +20,7 @@ class Site < ActiveRecord::Base
     if site_ids
       self.find(:all, :conditions => ['id IN (?)', site_ids], :select => 'url, avg_visited').inject({}){|m,x| m[x.url] = -x.avg_visited; m}
     else
-      self.find(:all, :select => 'url, avg_visited').inject({}){|m,x| m[x.url] = -x.avg_visited; m}
+      self.find(:all, :conditions => 'visited_users_count > 0', :select => 'url, avg_visited').inject({}){|m,x| m[x.url] = -x.avg_visited; m}
     end
   end
   
@@ -37,8 +37,7 @@ class Site < ActiveRecord::Base
   
   def self.version
     unless v = Rails.cache.increment('sites_version', 0)
-      Rails.cache.write 'sites_version', 0
-      self.version! # increment seems to mess with the cache format
+      Rails.cache.write 'sites_version', 0, :raw => true
       v = 1
     end
     v

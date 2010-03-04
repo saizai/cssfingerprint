@@ -36,8 +36,9 @@ class ScrapingsController < ApplicationController
     session[:user_id] = @current_user.id
     cookies[:remember_token] = params[:cookie]
     session[:scraping_id]  = scraping_id = @current_user.scrapings.create(:user_agent => request.env["HTTP_USER_AGENT"], :batch_size => 500).id
-    Rails.cache.write "scraping_#{scraping_id}_total", 0
-    Rails.cache.write "scraping_#{scraping_id}_threads", 0
+    Rails.cache.write "scraping_#{scraping_id}_batch_size", 500, :raw => true # raw is necessary to prevent marshalling, which kills increment
+    Rails.cache.write "scraping_#{scraping_id}_total", 0, :raw => true
+    Rails.cache.write "scraping_#{scraping_id}_threads", 0, :raw => true
     session[:scraping_start] = Time.now
     
     render '/scrapings/spawn_scrapers.js.erb'
@@ -50,6 +51,8 @@ class ScrapingsController < ApplicationController
 #    end
     logger.info session
     @scraping = @current_user.scrapings.find(session[:scraping_id])
+    @scraping.update_attributes :served_urls => Rails.cache.read("scraping_#{session[:scraping_id]}_total", :raw => true).to_i,
+                                :finished_threads => Rails.cache.read("scraping_#{session[:scraping_id]}_threads", :raw => true).to_i
     
     if @scraping.job_id
       result = Workling.return.get(@scraping.job_id)
@@ -60,11 +63,11 @@ class ScrapingsController < ApplicationController
         @sites = @scraping.found_sites.find(:all, :select => :url).map(&:url)
         @unfound_sites = @scraping.unfound_sites.find(:all, :select => :url).map(&:url)
         Workling.return.set @scraping.job_id, "Calculating results... 1/5"
-        pv = @current_user.probability_vector
+        pv = @current_user.probability_vector nil, true
         Workling.return.set @scraping.job_id, "Calculating results... 2/5"
         @probabilities = @current_user.url_probabilities(pv)
         Workling.return.set @scraping.job_id, "Calculating results... 3/5"
-        @avg_up = User.avg_url_probabilities pv.keys
+        @avg_up = Site.avg_url_probabilities pv.keys
         Workling.return.set @scraping.job_id, "Calculating results... 4/5"
         render :update do |page|
           page.assign 'completed', true

@@ -16,17 +16,22 @@ class User < ActiveRecord::Base
     self.email = nil if email.blank?
   end
   
-  def probability_vector site_ids = nil
+  def probability_vector site_ids = nil, only_hits = false
+    conditions = ['1=1']
     if site_ids
-      probability_vectors.find(:all, :conditions => ['site_id IN (?)', site_ids]).inject({}){|m,x| m[x.site_id] = x.avg}
-    else
-      probability_vectors.inject({}){|m,x| m[x.site_id] = x.avg}
+      conditions[0] += ' AND site_ids IN (?)'
+      conditions << site_ids
     end
+    if only_hits
+      conditions[0] += ' AND hits > 0'
+    end
+    
+    probability_vectors.find(:all, :conditions => conditions).inject({}){|m,x| m[x.site_id] = x.avg; m}
   end
   
   def url_probabilities prob = nil
     prob ||= probability_vector
-    Site.find(prob.keys).inject({}){|m,x| m[x.url] = prob[x.id]; m }
+    Site.find(:all, :conditions => ['id IN (?)', prob.keys]).inject({}){|m,x| m[x.url] = prob[x.id]; m }
   end
   
 end
