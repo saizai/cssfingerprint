@@ -4,6 +4,10 @@ require 'scrubyt'
 namespace :technorati do
   desc "Import top 100 Technorati blogs"
   task :update => :environment do
+    raise "Lockfile found" if File.exist?(File.join(RAILS_ROOT, 'update.lock'))
+    f = File.new(File.join(RAILS_ROOT, 'update.lock'), 'w')
+    f.close
+    
     technorati = Scrubyt::Extractor.define do
       fetch 'http://technorati.com/blogs/top100/'
       
@@ -16,5 +20,8 @@ namespace :technorati do
     
     Site.import [:alexa_rank, :url], technorati.to_hash.map{|x| [0, x[:link_url].sub('http://www.', '').sub('http://','').sub(/\/$/, '')]}, 
         :validate => false, :on_duplicate_key_update => [:alexa_rank] 
+    
+    Site.version!
+    File.delete(File.join(RAILS_ROOT, 'update.lock'))
   end
 end

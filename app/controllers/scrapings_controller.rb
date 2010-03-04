@@ -4,7 +4,9 @@ class ScrapingsController < ApplicationController
   end
   
   def create
-    if params[:cookie].blank?
+    if File.exist?(File.join(RAILS_ROOT, 'update.lock'))
+      @error_msg = "Our sites database is currently being updated. Please wait a few minutes and try again."
+    elsif params[:cookie].blank?
       @error_msg = "Please enter a unique code."
     else
       @current_user = User.find_by_cookie(params[:cookie])
@@ -77,7 +79,7 @@ class ScrapingsController < ApplicationController
       end
     else
       render :update do |page|
-        page['status'].replace_html "Processing... #{@scraping.found_visitations_count} hits found. #{@scraping.visitations_count} processed so far of #{@scraping.served_urls} scraped. \
+        page['status'].replace_html "Processing ##{@scraping.id}... #{@scraping.found_visitations_count} hits found. #{@scraping.visitations_count} processed so far of #{@scraping.served_urls} scraped. \
           #{WORKLING_CLIENT.stats.first[1]['curr_items']} jobs in queue."
       end
     end

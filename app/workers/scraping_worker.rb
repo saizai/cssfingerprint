@@ -5,24 +5,25 @@ class ScrapingWorker < Workling::Base
   BG_LOGGER = Logger.new(logfile) 
   BG_LOGGER.debug "#{Time.now.to_s}: Loading ScrapingWorker. Return store: #{Workling.return.inspect}"
   
-  def process_results(options)
-    Workling.return.set options[:uid], "Starting results calculation..."
-    scraping = Scraping.find(options[:scraping_id])
-    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Starting results for scraping #{scraping.id}"
-    sites = scraping.found_sites.find(:all, :select => :url).map(&:url)
-    Workling.return.set options[:uid], "Calculating results... 1/5"
-    unfound_sites = scraping.unfound_sites.find(:all, :select => :url).map(&:url)
-    Workling.return.set options[:uid], "Calculating results... 2/5"
-    pv = scraping.user.probability_vector
-    Workling.return.set options[:uid], "Calculating results... 3/5"
-    probabilities = scraping.user.url_probabilities(pv)
-    Workling.return.set options[:uid], "Calculating results... 4/5"
-    avg_up = User.avg_url_probabilities pv.keys
-    Workling.return.set options[:uid], "Calculating results... 5/5"
-    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Returning results for scraping #{scraping.id}"
+  def version_sites_once_idle!(options)
+    if Rails.cache.read 'version_sites_once_idle_lock'
+      BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: version_sites_once_idle already in queue"
+      return
+    else
+      Rails.cache.write 'version_sites_once_idle_lock', true
+    end
     
-    Workling.return.set options[:uid], :sites => sites, :unfound_sites => unfound_sites, :probabilities => probabilities, :avg_up => avg_up 
-    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Processed results for scraping #{scraping.id}"
+    while Scraping.last.created_at > 2.minutes.ago
+      BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Not idle..."
+      sleep 10
+    end
+    
+    Site.version!
+    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Versioned!"
+    300.times{|i| Site.get 500 * i }
+    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Warmed up!"
+    
+    Rails.cache.delete 'version_sites_once_idle_lock'
   rescue => e
     BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: ERROR #{e}"
   end
