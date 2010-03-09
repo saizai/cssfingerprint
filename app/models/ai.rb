@@ -2,9 +2,9 @@ class AI
   
   def self.regenerate
     used_sites = Site.find(:all, :conditions => 'avg_visited < 0', :select => 'id').map(&:id).sort
-    f_all = File.open File.join(RAILS_ROOT, 'css_svm_all.txt'), 'w'
-    f_train = File.open File.join(RAILS_ROOT, 'css_svm_train.txt'), 'w'
-    f_test  = File.open File.join(RAILS_ROOT, 'css_svm_test.txt'), 'w'
+    f_all = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_all.txt'), 'w'
+    f_train = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_train.txt'), 'w'
+    f_test  = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_test.txt'), 'w'
     Scraping.find(:all,  :conditions => 'found_visitations_count > 0').each do |scraping|
       file = ((rand(2) == 1) ? f_test : f_train) 
       string = self.get_line_for scraping, used_sites
@@ -21,9 +21,9 @@ class AI
   end
   
   def self.update scraping_id
-    f_all = File.open File.join(RAILS_ROOT, 'css_svm_all.txt'), 'a'
-    f_train = File.open File.join(RAILS_ROOT, 'css_svm_train.txt'), 'a'
-    f_test  = File.open File.join(RAILS_ROOT, 'css_svm_test.txt'), 'a'
+    f_all = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_all.txt'), 'a'
+    f_train = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_train.txt'), 'a'
+    f_test  = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_test.txt'), 'a'
     file = ((rand(2) == 1) ? f_test : f_train)
     scraping = Scraping.find(scraping_id)
     used_sites = Site.find(:all, :conditions => 'avg_visited < 0', :select => 'id').map(&:id).sort
@@ -47,7 +47,7 @@ class AI
   
   def self.update_model
     self.make_svm_model 'css_svm_all.txt'
-    model.save(File.join(RAILS_ROOT, 'css_svm_model.txt'))
+    model.save(File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_model.txt'))
   end
   
   def self.make_model datafile
@@ -59,7 +59,7 @@ class AI
 #    pa.kernel_type = SIGMOID
 #    pa.C = 32768.0
 #    pa.gamma = 3.0517578125e-05
-    sp = Problem.new(*read_file(File.join(RAILS_ROOT, datafile)))
+    sp = Problem.new(*read_file(File.join(RAILS_ROOT, 'db', 'ai', datafile)))
     model = Model.new(sp, pa)
   end
   
@@ -72,7 +72,7 @@ class AI
   # This is a very expensive call to regenerate.
   def self.avg_pv regen = false
     if regen or !(ret = Rails.cache.read('AI.avg_pv'))
-      f_all = File.open File.join(RAILS_ROOT, 'css_svm_all.txt'), 'r'
+      f_all = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_all.txt'), 'r'
       scrapings = []
       while line = f_all.gets
         scrapings << line
@@ -83,7 +83,7 @@ class AI
       total_probs = {}
       scrapings.size.times do |i|
         print "#{i}: "
-        f_temp = File.open File.join(RAILS_ROOT, 'css_svm_temp.txt'), 'w'
+        f_temp = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_temp.txt'), 'w'
         user_id, vector = self.parse_line scrapings[i]
         other_lines = scrapings[(i+1)..-1]
         other_lines += scrapings[0..(i-1)] if i != 0
