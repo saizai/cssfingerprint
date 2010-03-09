@@ -63,7 +63,7 @@ namespace (:deploy) do
   
   after "deploy:update_code", "deploy:symlink_data"
   task :symlink_data, :except => { :no_release => true } do
-    run "mkdir #{shared_path}/ai"
+    # run "mkdir #{shared_path}/ai"
     run "ln -nfs #{shared_path}/ai #{release_path}/db/ai"
   end
   
