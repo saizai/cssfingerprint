@@ -1,5 +1,7 @@
 <h4><%= link_to "Preliminary results", results_url %> / <%= link_to "Technical details", about_url %></h4>
 
+<h5>Fellow hackers: try to answer <A href="http://stackoverflow.com/questions/2394890/css-js-hacking-detect-visited-styling-on-a-link-without-checking-it-directly">this</A> or <a href="http://stackoverflow.com/questions/2394759/css-cross-browser-reflowing-top-to-bottom-multi-column-lists">this</a>.</h5>
+
 <div id="participate">
 	<h3>Participate</h3>
 
@@ -16,64 +18,63 @@
 		</script>
 		
 		<div id="results"></div>
-		<div id="status"></div>
-		<% effective_threads.times do |i| %>
-			<div id="status_<%= i %>"><% 'Loading javascript...' if i == 0 %></div>
-		<% end %>
+		<div id="status">Loading javascript...</div>
 		<div style="clear:both;"></div>
-		<% form_remote_tag(:url => scrapings_url, :method => :post, :html => {:id => 'cookie_form'},
-					:loading => update_page {|page| page['status_0'].replace_html "Checking code..."; page['cookie_form'].hide }) do %>
+		<% form_remote_tag(:url => scrapings_url, :method => :post, :html => {:id => 'cookie_form'}, :with => "'fastest_method=' + fastest_method",
+					:loading => update_page {|page| page['status'].replace_html "Checking code..."; page['cookie_form'].hide }) do %>
 			<p>Enter something unique to you (NOT a password). <%= text_field_tag :cookie, cookies[:remember_token] %> <small> E.g. <%= random_string %></small>
 			<br/><span style="color:red;">Please use <b>the same code</b> every time you visit (including from other browsers/computers).</span>
 			</p>
 			<p>Have you visited before? <%= check_box_tag :repeat_user, '1', !cookies[:remember_token].blank? %></p>
-			<p><b>Optional:</b> Name <%= text_field_tag :name %> & email <%= text_field_tag :email %></p>
-			<p>May I show other users your name after they visit, to give them a list of similar users? <%= check_box_tag :release_name %><br/>
-			<small>I will never give anyone your email; it's only in case I want to contact you.
-				The "similar users" feature is not active yet (the AI isn't ready).</small></>
-			<p><%= submit_tag "Fingerprint me", :disabled => true %>
-				<br/>Warning: DO NOT use this from a public computer. This may cause your computer to run slowly for about a minute; it's normal, just be patient.</p>
+			<p><b>Optional:</b> Name <%= text_field_tag :name %></p>
+			<p>Do you want to see others' names in your "similar users" list, and let others see yours? <%= check_box_tag :release_name %><br/>
+			<small>You're free to use a nickname. You must consent to have your name released if you want to see others' names in your own similarity list.</small></p>
+			<p><b>Optional<i>er</i>:</b> email <%= text_field_tag :email %><br/>
+				<small>I will never give anyone your email; it's only in case I want to contact you.</small></p>
+			<%= hidden_field_tag 'fastest_method' %>
+			<p style="color:red">Warning: DO NOT use this from a public computer.</p>
+			<p>This may cause your computer to run slowly for about a minute; it's normal, just be patient.</p>
+			<p><%= submit_tag "Fingerprint me", :disabled => true %></p>
 		<% end %>
 		
-		<div id="scrapers" style="width: 1px; height: 1px;"></div>
+		<div id="scrapers"></div>
 		
 		<%= periodically_call_remote :frequency => 2, :condition => "completed == false", :url => results_scrapings_url(), :method => :get %>
 	</div>
-	
-	<p><span style="color:red">The data processor cannot currently keep up with the speed of the scraper, especially with multiple users. It may take a minute or two to process
-		your data. You'll see a live status report as it's working.</span></p>
-	<p><small>There are a few <a href="/about#bugs">known bugs</a>.</small></p>
-	
-	<script>
-		// There appears to be an issue that people may be starting the form before the JS is loaded, which prevents the returned AJAX from being executed.
-		// So we just disable it until loaded. Kludge but works.
-		Event.observe(window, 'load', function(){
-			$('cookie_form').enable();
-			$('status_0').innerHTML = 'Ready to scrape!'
-		});
-	</script>
+	<div style="clear: both;"></div>
+	<p>When you click 'fingerprint me', this site will test whether you've visited ~50,000-1,000,000 sites; it'll take one minute. At the end, you'll see a list of what sites
+		were found, and top 10 users who are similar to you. It will show their name if and only if both you and they consent to have your names shown.</p>
+	<p>It may take a couple minutes to process	your data. You'll see a live status report as it's working. It's first come first serve, so you may need to wait for 
+		someone else's info to get processed first. You'll see the queued jobs count going down as it does.</p>
+	<p>Please do not open a new tab/window on this site while the scraper is running, as it can disrupt your session and prevent you from seeing your results.
+		Occasionally, a scraping will hang - you can tell because the job queue is at 0 but it's not calculating your results. If that happens, just restart it for now;
+		 I'm working on fixing the underlying issues.</p>
+	 <p>Enjoy.</p>
 </div>
 
 <div id="about">
 	<h3>About CSS Fingerprint</h3>
 	
-	<p>Are you a geek? Please read the <%= link_to 'geektastic about page', about_url %> for technical details.</p>
-
 	<p>CSS Fingerprint is a research project inspired by the EFF's <a href="http://panopticlick.eff.org">Panopticlick</a>.</p>
 	
 	<p>Its intent is to see how well the <a href="http://ha.ckers.org/weird/CSS-history-hack.html">CSS history hack</a> can be used with "fuzzy" artificial intelligence
 	 techniques to uniquely fingerprint users <i>despite changes in their browsing history, even on new computers or new browsers</i>, and to tell how socially/culturally
 	 similar any two users are.</p>
 	
-	<p>At the moment, the AI component is not yet active. In order to write it, I need data.</p>
+	<p>The AI is now active, but in order to get better results, I need more data.</p>
 	
 	<p>To help out, please visit this site from multiple different browsers / computers that you own, on multiple days, using the same input each time.</p>
 	
-	<p>The data will not be shared with anyone except other EFF-friendly researchers who agree to keep it confidential.</p>
+	<p>No personally identifiable data will be shared with anyone except other EFF-friendly researchers who agree to keep it confidential. Aggregate and anonymized data will probably be 
+		used in a future paper.</p>
 	
 	<p>Thanks!</p>
 
 	<p>- <A href="http://saizai.com">Sai Emrys</A> (saizai)</p>
+	
+	<p>Email: saizai.com, cssfingerprint@</p>
+	
+	<p><%= link_to "Preliminary results", results_url %> / <%= link_to "Technical details", about_url %></p>
 </div>
 
 
@@ -96,12 +97,16 @@
 		<script>
 			batches = [Math.ceil(Math.random() * 20) * 50, Math.ceil(Math.random() * 20) * 50, Math.ceil(Math.random() * 20) * 50];
 			var urls = ["mail.google.com", "reader.google.com", "cssfingerprint.com", "ask.metafilter.com", "events.ccc.de", "en.wikipedia.org", "corner.nationalreview.com", "bits.blogs.nytimes.com", "andrewsullivan.theatlantic.com", "politicalticker.blogs.cnn.com", "blogs.abcnews.com/politicalpunch", "thecaucus.blogs.nytimes.com", "politico.com/blogs/bensmith", "yglesias.thinkprogress.org", "voices.washingtonpost.com/ezra-klein", "tpmmuckraker.talkingpointsmemo.com", "krugman.blogs.nytimes.com", "popwatch.ew.com", "latimesblogs.latimes.com/lanow", "mediadecoder.blogs.nytimes.com", "wired.com/gadgetlab", "artsbeat.blogs.nytimes.com", "cityroom.blogs.nytimes.com", "wired.com/epicenter", "theplumline.whorunsgov.com", "latimesblogs.latimes.com/washington", "opinionator.blogs.nytimes.com", "hotlineoncall.nationaljournal.com", "dealbook.blogs.nytimes.com", "politico.com/blogs/glennthrush", "swampland.blogs.time.com", "justjared.buzznet.com", "blogs.wsj.com/washwire", "commentarymagazine.com/blogs", "wired.com/dangerroom", "firstread.msnbc.msn.com", "whatever.scalzi.com", "blogs.abcnews.com/thenote", "google.com", "facebook.com", "youtube.com", "yahoo.com", "live.com", "wikipedia.org", "blogger.com", "baidu.com", "msn.com", "qq.com", "yahoo.co.jp", "twitter.com", "google.co.in", "sina.com.cn", "google.cn", "google.de", "myspace.com", "wordpress.com", "microsoft.com", "amazon.com", "google.co.uk", "bing.com", "ebay.com", "google.fr", "taobao.com", "yandex.ru", "163.com", "google.co.jp", "livejasmin.com", "rapidshare.com", "linkedin.com", "google.com.br", "mail.ru", "flickr.com", "fc2.com", "craigslist.org", "google.it", "vkontakte.ru", "google.es", "imdb.com", "sohu.com", "1e100.net", "aol.com", "youku.com", "soso.com", "bbc.co.uk", "conduit.com", "go.com", "doubleclick.com", "apple.com", "bp.blogspot.com", "google.com.mx", "orkut.com.br", "photobucket.com", "pornhub.com", "ask.com", "google.ca", "cnn.com", "orkut.com", "xvideos.com", "kaixin001.com", "hi5.com", "youporn.com", "about.com", "mediafire.com", "adobe.com", "cnet.com", "google.ru", "tudou.com", "megaupload.com", "ebay.de", "rakuten.co.jp", "imageshack.us", "tianya.cn", "renren.com", "ameblo.jp", "google.com.tr", "orkut.co.in", "uol.com.br", "4shared.com", "google.co.id", "espn.go.com", "livejournal.com", "files.wordpress.com", "megavideo.com", "hotfile.com", "livedoor.com", "xhamster.com", "google.com.au", "globo.com", "mixi.jp", "nytimes.com", "tube8.com", "mozilla.com", "odnoklassniki.ru", "digg.com", "google.pl", "weather.com", "dailymotion.com", "redtube.com", "thepiratebay.org", "deviantart.com", "clicksor.com", "ebay.co.uk", "optmd.com", "rediff.com", "xunlei.com", "xtendmedia.com", "ifeng.com", "google.com.sa", "goo.ne.jp", "google.nl", "amazon.de", "paypal.com", "godaddy.com", "adultfriendfinder.com", "yieldmanager.com", "amazon.co.jp", "zynga.com", "partypoker.com", "hao123.com", "taringa.net", "mywebsearch.com", "ning.com", "rambler.ru", "ezinearticles.com", "xnxx.com", "alibaba.com", "google.com.ar", "filestube.com", "answers.com", "google.co.th", "sogou.com", "download.com", "tagged.com", "nasza-klasa.pl", "spiegel.de", "google.com.eg", "zedo.com", "wretch.cc", "cnzz.com", "fastbrowsersearch.com", "cpxinteractive.com", "depositfiles.com", "ehow.com", "free.fr", "google.co.za", "google.com.pk", "netflix.com", "tinypic.com", "twitpic.com", "huffingtonpost.com", "chinaz.com", "nicovideo.jp", "sourceforge.net", "terra.com.br", "aweber.com", "soufun.com", "reference.com", "tumblr.com", "wikimedia.org", "douban.com", "bit.ly", "hulu.com", "torrentz.com", "maktoob.com", "ku6.com", "badoo.com", "typepad.com", "56.com", "onet.pl", "youjizz.com", "vk.com", "dell.com", "amazon.co.uk", "indiatimes.com", "comcast.net", "linkbucks.com", "orange.fr", "2ch.net", "metacafe.com", "nifty.com", "isohunt.com", "gmx.net", "angege.com", "digitalpoint.com", "archive.org", "foxnews.com", "cricinfo.com", "wikia.com", "statcounter.com", "web.de", "gougou.com", "bankofamerica.com", "streamate.com", "megaporn.com", "blogfa.com", "domaintools.com", "google.co.ve", "google.be", "hp.com", "imagevenue.com", "netlog.com", "stumbleupon.com", "xinhuanet.com", "libero.it", "zol.com.cn", "allegro.pl", "gamespot.com", "4399.com", "secureserver.net", "wordpress.org", "skyrock.com", "wp.pl", "google.com.co", "hatena.ne.jp", "mybrowserbar.com", "bild.de", "metroflog.com", "biglobe.ne.jp", "dailymail.co.uk", "google.at", "ameba.jp", "keezmovies.com", "xing.com", "narod.ru", "google.gr", "google.se", "alipay.com", "naver.com", "addthis.com", "ign.com", "istockphoto.com", "mozilla.org", "pconline.com.cn", "squidoo.com", "scribd.com", "guardian.co.uk", "51.la", "google.com.vn", "ucoz.ru", "avg.com", "ynet.com", "leo.org", "kooora.com", "verycd.com", "126.com", "infoseek.co.jp", "google.ro", "hubpages.com", "ig.com.br", "spankwire.com", "leboncoin.fr", "vnexpress.net", "google.com.my", "pogo.com", "seznam.cz", "formspring.me", "google.ch", "wsj.com", "liveinternet.ru", "studiverzeichnis.com", "tom.com", "sakura.ne.jp", "walmart.com", "geocities.jp", "hyves.nl", "skype.com", "mop.com", "brothersoft.com", "vimeo.com", "google.pt", "torrents.ru", "friendster.com", "tnaflix.com", "yourfilehost.com", "opendns.com", "reuters.com", "yelp.com", "nba.com", "babylon.com", "google.com.pe", "ocn.ne.jp", "multiply.com", "telegraph.co.uk", "58.com", "thefreedictionary.com", "justin.tv", "amazonaws.com", "youdao.com", "softonic.com", "uploading.com", "google.cl", "seesaa.net", "t-online.de", "usps.com", "in.com", "megaclick.com", "google.com.ua", "softpedia.com", "fotolog.net", "tribalfusion.com", "bestbuy.com", "clickbank.com", "homeway.com.cn", "last.fm", "game2.com.cn", "veoh.com", "ebay.it", "reddit.com", "people.com.cn", "adultadworld.com", "marca.com", "rr.com", "marketgid.com", "theplanet.com", "mapquest.com", "csdn.net", "empflix.com", "blogcatalog.com", "ups.com", "verizon.net", "commentcamarche.net", "kaskus.us", "tripadvisor.com", "imagebam.com", "eastmoney.com", "z5x.net", "virgilio.it", "kakaku.com", "onemanga.com", "daum.net", "ziddu.com", "constantcontact.com", "harrenmedianetwork.com", "plentyoffish.com", "etsy.com", "icio.us", "google.com.ph", "360buy.com", "letitbit.net", "repubblica.it", "cj.com", "zshare.net", "wordreference.com", "zing.vn", "target.com", "mashable.com", "cctv.com", "wer-kennt-wen.de", "ikea.com", "washingtonpost.com", "engadget.com", "techcrunch.com", "miniclip.com", "paipai.com", "17kuyou.com", "ganji.com", "hardsextube.com", "dmm.co.jp", "att.com", "btjunkie.org", "autohome.com.cn", "google.com.tw", "1133.cc", "tuenti.com", "over-blog.com", "google.co.hu", "hurriyet.com.tr", "newegg.com", "fox.com", "imgur.com", "intuit.com", "uimserv.net", "gamefaqs.com", "comcast.com", "latimes.com", "hostgator.com", "mihanblog.com", "webs.com", "qidian.com", "slideshare.net", "w3schools.com", "joomla.org", "ebay.fr", "alimama.com", "zimbio.com", "urbandictionary.com", "livedoor.biz", "xe.com", "chip.de", "google.dk", "shufuni.com", "icq.com", "pandora.com", "exblog.jp", "expedia.com", "chase.com", "pchome.net", "vancouver2010.com", "fastclick.com", "msn.ca", "118114.cn", "articlesbase.com", "google.ie", "disney.go.com", "ebay.com.au", "naukri.com", "googleusercontent.com", "match.com", "china.com", "focus.cn", "jugem.jp", "careerbuilder.com", "cocolog-nifty.com", "chinamobile.com", "google.fi", "advmaker.ru", "ppstream.com", "ibm.com", "google.ae", "atwiki.jp", "altervista.org", "myegy.com", "google.com.bd", "anonym.to", "google.com.sg", "informer.com", "wunderground.com", "slutload.com", "usatoday.com", "nih.gov", "timesonline.co.uk", "break.com", "radikal.ru", "abcnews.go.com", "fedex.com", "tmz.com", "corriere.it", "meinvz.net", "admagnet.net", "so-net.ne.jp", "livescore.com", "milliyet.com.tr", "wareseeker.com", "detik.com", "xici.net", "chinanews.com.cn", "traidnt.net", "tweetmeme.com", "irs.gov", "freelotto.com", "fbcdn.net", "amazon.cn", "beemp3.com", "mercadolivre.com.br", "drudgereport.com", "dianping.com", "excite.co.jp", "sendspace.com", "elmundo.es", "warriorforum.com", "google.no", "seriesyonkis.com", "besttubeclips.com", "4tube.com", "google.co.il", "love21cn.com", "tradedoubler.com", "ebuddy.com", "mynet.com", "nowdownloadall.com", "monster.com", "dantri.com.vn", "sitesell.com", "warez-bb.org", "ctrip.com", "irctc.co.in", "news.com.au", "linternaute.com", "sfr.fr", "meebo.com", "accuweather.com", "tripod.com", "goal.com", "ggpht.com", "booking.com", "way2sms.com", "ya.ru", "brazzers.com", "51job.com", "pcpop.com", "ow.ly", "1und1.de", "alice.it", "interia.pl", "jeuxvideo.com", "musica.com", "dangdang.com", "ustream.tv", "freakshare.net", "oneindia.in", "verizonwireless.com", "indeed.com", "rbc.ru", "symantec.com", "icbc.com.cn", "bigpoint.com", "nextag.com", "fotolia.com", "people.com", "php.net", "duowan.com", "immobilienscout24.de", "getpersonas.com", "7k7k.com", "thesun.co.uk", "nokia.com", "feedburner.com", "forbes.com", "mercadolibre.com.mx", "neobux.com", "informharry.com", "mobile.de", "nbcolympics.com", "iciba.com", "tweetphoto.com", "plusnetwork.com", "foxsports.com", "stc.com.sa", "yimg.com", "associatedcontent.com", "w3.org", "sapo.pt", "51.com", "gizmodo.com", "cam4.com", "getiton.com", "xtube.com", "mediaset.it", "easy-share.com", "meetup.com", "exbii.com", "blackhatworld.com", "naqigs.com", "onetad.com", "weather.com.cn", "lenta.ru", "gazeta.pl", "huanqiu.com", "schuelervz.net", "advertserve.com", "surveymonkey.com", "boston.com", "vmn.net", "mtv.com", "freeones.com", "incredimail.com", "sweetim.com", "examiner.com", "mediaplex.com", "admin5.com", "businessweek.com", "bebo.com", "cookpad.com", "iwiw.hu", "gutefrage.net", "sanook.com", "gc.ca", "nfl.com", "mpnrs.com", "mtime.com", "ninemsn.com.au", "perezhilton.com", "bloomberg.com", "6.cn", "17173.com", "metrolyrics.com", "m-w.com", "linkwithin.com", "hudong.com", "elance.com", "odesk.com", "dyndns.org", "dtiblog.com", "iminent.com", "whitepages.com", "y8.com", "yesky.com", "americanexpress.com", "overstock.com", "lequipe.fr", "as.com", "elpais.com", "eyny.com", "yomiuri.co.jp", "adult-empire.com", "awempire.com", "clarin.com", "stackoverflow.com", "custhelp.com", "farmville.com", "360.cn", "filefactory.com", "blogbus.com", "allocine.fr", "icicibank.com", "multiupload.com", "basecamphq.com", "fling.com", "abril.com.br", "heise.de", "nydailynews.com", "demonoid.com", "sfgate.com", "webshots.com", "salesforce.com", "time.com", "ultimate-guitar.com", "sulekha.com", "joy.cn", "39.net", "capitalone.com", "pcworld.com", "ip138.com", "gametrailers.com", "dmoz.org", "it168.com", "nu.nl", "hdfcbank.com", "rakuten.ne.jp", "linksynergy.com", "docstoc.com", "priceminister.com", "sonico.com", "xbox.com", "ibibo.com", "kioskea.net", "ovguide.com", "webmd.com", "earthlink.net", "tu.tv", "shopping.com", "www.net.cn", "mixx.com", "gazzetta.it", "wired.com", "xcar.com.cn", "deviantclip.com", "pch.com", "wikihow.com", "rottentomatoes.com", "opera.com", "sun.com", "tiscali.it", "allrecipes.com", "aufeminin.com", "debonairblog.com", "slickdeals.net", "yam.com", "moneycontrol.com", "sueddeutsche.de", "watch-movies-online.tv", "wowhead.com", "tv.com", "songs.pk", "sitemeter.com", "miibeian.gov.cn", "linezing.com", "suite101.com", "laredoute.fr", "discuz.net", "fanpop.com", "google.com.ng", "playstation.com", "ca.gov", "gamer.com.tw", "eorezo.com", "shareasale.com", "friendfeed.com", "kijiji.ca", "softlayer.com", "zedge.net", "tabnak.ir", "qunar.com", "tinyurl.com", "oyunlar1.com", "google.cz", "google.co.nz", "zaycev.net", "rian.ru", "4chan.org", "kinopoisk.ru", "allabout.co.jp", "nasa.gov", "nate.com", "woot.com", "mysql.com", "askmen.com", "forumcommunity.net", "sahibinden.com", "skysports.com", "filehippo.com", "sify.com", "macys.com", "dreamstime.com", "badongo.com", "aftonbladet.se", "sanspo.com", "addictinggames.com", "cmbchina.com", "torrentreactor.net", "att.net", "buzznet.com", "zhaopin.com", "ovh.net", "hc360.com", "gsmarena.com", "wellsfargo.com", "persianblog.ir", "bluehost.com", "robtex.com", "who.is", "openv.com", "mercadolibre.com.ar", "wowarmory.com", "cntv.cn", "yandex.ua", "google.sk", "avast.com", "kino.to", "google.com.hk", "google.co.ma", "uploaded.to", "southwest.com", "ft.com", "orbitz.com", "qip.ru", "smh.com.au", "ekolay.net", "abc.go.com", "cncnet.net", "travian.ir", "evony.com", "downarchive.com", "yellowpages.com", "5d6d.com", "cloob.com", "travian.ae", "univision.com", "novoteka.ru", "kompas.com", "myfreepaysite.com", "pagesjaunes.fr", "marketwatch.com", "drupal.org", "xinmin.cn", "shinobi.jp", "hotlinkimage.com", "komli.com", "bramjnet.com", "rtl.de", "discuss.com.hk", "newgrounds.com", "welt.de", "barnesandnoble.com", "shaadi.com", "realtor.com", "blackberry.com", "bahn.de", "19lou.com", "kicker.de", "zylom.com", "travelocity.com", "freshwap.net", "foodnetwork.com", "gismeteo.ru", "mobile9.com", "google.com.kw", "yfrog.com", "orf.at", "koubei.com", "sponichi.co.jp", "howstuffworks.com", "pixnet.net", "smashingmagazine.com", "rayfile.com", "mdinfo.com", "weebly.com", "webmasterworld.com", "teacup.com", "wat.tv", "pixiv.net", "panoramio.com", "pantip.com", "samsung.com", "priceline.com", "nikkeibp.co.jp", "oricon.co.jp", "sky.com", "yaplog.jp", "hattrick.org", "experts-exchange.com", "hsbc.co.uk", "gmodules.com", "mp3raid.com", "extratorrent.com", "smowtion.com", "compete.com", "nhl.com", "google.co.kr", "realitykings.com", "lifehacker.com", "getafreelancer.com", "vente-privee.com", "deezer.com", "premierleague.com", "google.bg", "topix.com", "01net.com", "armorgames.com", "dion.ne.jp", "me.com", "baixing.com", "impress.co.jp", "amazon.fr", "119.147.41.16", "dict.cc", "pornorama.com", "r10.net", "wiktionary.org", "mcssl.com", "trafficholder.com", "detiknews.com", "intel.com", "wwe.com", "pcauto.com.cn", "focus.de", "okwave.jp", "payserve.com", "weather.gov", "google.com.ec", "ddmap.com", "demotywatory.pl", "dl4all.com", "sdo.com", "speedtest.net", "fixya.com", "plala.or.jp", "met-art.com", "nikkei.co.jp", "zaobao.com", "daqi.com", "kickasstorrents.com", "startimes2.com", "getresponse.com", "google.com.ly", "gittigidiyor.com", "imvu.com", "vnet.cn", "homedepot.com", "collegehumor.com", "rk.com", "google.lk", "wikimapia.org", "hgtv.com", "templatemonster.com", "wetter.com", "proboards.com", "girlsgogames.com", "skycn.com", "searchresultsdirect.com", "information.com", "stern.de", "nikkansports.com", "mail.com", "tabelog.com", "tgbus.com", "officialiqquiz.com", "amung.us", "cncmax.cn", "onlinedown.net", "autotrader.com", "uwants.com", "marktplaats.nl", "gamezer.com", "timeanddate.com", "gap.com", "king.com", "technorati.com", "imagefap.com", "doctissimo.fr", "posterous.com", "lemonde.fr", "ineedfile.com", "tiexue.net", "juegos.com", "adbrite.com", "themeforest.net", "ticketmaster.com", "kayak.com", "tomshardware.com", "infolinks.com", "charter.net", "google.com.do", "gawker.com", "shutterstock.com", "sxc.hu", "flippa.com", "bangbros1.com", "glispa.com", "evite.com", "retailmenot.com", "10xdownloads.com", "sears.com", "discovery.com", "nypost.com", "cyworld.com", "rapidlibrary.com", "mlb.com", "programme-tv.net", "auto.ru", "sedoparking.com", "yallakora.com", "classmates.com", "mininova.org", "china.com.cn", "citibank.com", "lenovo.com", "clubpenguin.com", "allyes.com", "ebay.ca", "gumtree.com", "runescape.com", "monografias.com", "winamp.com", "kaixin.com", "pornhost.com", "mainichi.jp", "sitepoint.com", "alisoft.com", "pptv.com", "zillow.com", "google.hr", "cbssports.com", "rapid4me.com", "virginmedia.com", "zappos.com", "ebay.es", "asahi.com", "linkhelper.cn", "chinaren.com", "pichunter.com", "monsterindia.com", "backpage.com", "tattoodle.com", "jcpenney.com", "gnavi.co.jp", "gamevance.com", "hoopchina.com", "victoriassecret.com", "szn.cz"]
-			document.write("<tr><th rowspan=2>Method</th><th style='white-space: nowrap;' colspan=" + batches.size() + ">Time / 1k URLs in batch sizes of:</th><th rowspan=2>bogus?</th>");
+			document.write("<tr><th rowspan=2>Method</th><th style='white-space: nowrap;' colspan=" + batches.size() + ">Time / 1k x4 URLs in batch sizes of:</th><th rowspan=2>bogus?</th>");
 			var selftest_urls = ['cssfingerprint.com','google.com', 'adfkljalksdflaesw.com', 'google.com/images/life_hppA.jpg'];
 			
 			document.write('<th rowspan=2>' + selftest_urls.join('</th><th rowspan=2>') + '</td></tr><tr>');
 			
 			document.write('<td style="text-align:right;">' + batches.join('</td><td style="text-align:right;">') + '</td></tr>');
+			
+			max_batch = batches.max();
+			fastest_method = 'jquery';
+			fastest_method_time = 1000000;
 			
 			<% methods = METHODS.sort{rand(3)-1} %>
 			var results = {};
@@ -112,16 +117,24 @@
 			<% methods.each do |m| %>
 				// reuse_noinsert + explorer = crash :(
 				if (!('<%=m%>' == 'reuse_noinsert' && BrowserDetect.browser == 'Explorer')) {
+					results["<%=m%>"] = CSSHistory.check_batch_with(selftest_urls, "<%=m%>");
+					if (!results["<%=m%>"]['cssfingerprint.com'] || results["<%=m%>"]['adfkljalksdflaesw.com'])
+						bogus = true
+					else
+						bogus = false
 					document.write("<tr><td>" + "<%=m%>" + "</td>");
 					for (var b = 0; b < batches.size(); b++) {
 						timeDiff.setStartTime();
 						CSSHistory.check_batch_with(urls.slice(0, batches[b]), "<%=m%>");
 						timings[batches[b]]["<%=m%>"] = Math.round(timeDiff.getDiff() * (1000 / batches[b])); // normalize to ms/1kURL
 						document.write('<td style="text-align:right;">' + timings[batches[b]]["<%=m%>"] + " ms</td>");
+						if (batches[b] == max_batch && timings[batches[b]]["<%=m%>"] < fastest_method_time && !bogus) {
+							fastest_method = '<%=m%>'
+							fastest_method_time = timings[batches[b]]["<%=m%>"]
+						}
 					}
-					results["<%=m%>"] = CSSHistory.check_batch_with(selftest_urls, "<%=m%>");
 					document.write("<td>");
-					if (!results["<%=m%>"]['cssfingerprint.com'] || results["<%=m%>"]['adfkljalksdflaesw.com']) {
+					if (bogus) {
 						document.write('bogus!');
 					}
 					document.write('</td>');
@@ -130,6 +143,7 @@
 					}
 				}
 			<% end %>
+<% if false %>
 			document.write("<tr><th>without variants:</th></tr>");
 			<% methods.each do |m| %>
 				if (!('<%=m%>' == 'reuse_noinsert' && BrowserDetect.browser == 'Explorer')) {
@@ -140,9 +154,12 @@
 						timings[batches[b]]["<%=m%> novariants"] = Math.round(timeDiff.getDiff() * (1000 / batches[b])); // normalize to ms/1kURL
 						document.write('<td style="text-align:right;">' + timings[batches[b]]["<%=m%> novariants"] + " ms</td>");
 					}
+					document.write("</tr>");
 				}
 			<% end %>
-			document.write("</tr>");
+<% end %>
+			$('fastest_method').value = fastest_method;
+			
 			<%=  remote_function :url => browser_tests_url, :method => :post, :with => "'results=' + JSON.stringify(results) + '&timings=' + JSON.stringify(timings)" %>
 		</script>
 	</table>
@@ -154,3 +171,13 @@
 	<p>This test only tells the server your user-agent and the information in the table above. It tests 1000 URLs but doesn't report the results of that, only the timing. 
 		This will help me to create better scraping methods.</p>
 </div>
+
+<script>
+	// There appears to be an issue that people may be starting the form before the JS is loaded, which prevents the returned AJAX from being executed.
+	// So we just disable it until loaded. Kludge but works.
+	Event.observe(window, 'load', function(){
+		$('cookie_form').enable();
+		$('status').innerHTML = 'Ready to scrape!'
+		$('cookie').focus();
+	});
+</script>

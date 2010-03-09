@@ -1,4 +1,4 @@
-require 'linalg'
+# require 'linalg'
 
 namespace :svd do
   desc "Take half the data, extract SVD, and test it on the other half. Ish."

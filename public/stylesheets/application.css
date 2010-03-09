@@ -3,3 +3,43 @@ a.csshistory:visited {color: #ff0000; display: inline;}
 
 div.csshistory a { display: none;}
 div.csshistory a:visited { display: inline; }
+
+ul.multi, ol.multi {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+ 
+ul.multi li, ol.multi li {
+  float: left; 
+  width: 20em;
+  margin: 0;
+  padding: 0;
+}
+
+/* An attempt at a compatibilist top-bottom flow. Unforunately, it doesn't work for non-IE/Moz/Webkit/CSS3 browsers, like Chromium.
+ * See http://stackoverflow.com/questions/2394759/css-cross-browser-reflowing-top-to-bottom-multi-column-lists
+ * 
+ul.multi, ol.multi {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	-moz-column-width: 15em;
+	-webkit-column-width: 15em;
+	column-width: 15em;
+	-moz-column-gap: 1em;
+	-webkit-column-gap: 1em;
+	column-gap: 1em;
+}
+ 
+// IE does not support the CSS3/Moz/Webkit columning above, so we revert to right-to-left ordering 
+ul.multi li, ol.multi li {
+ <!--[if IE]>
+  float: left; 
+ <![endif]-->
+  width: 20em;
+  margin: 0;
+  padding: 0;
+} */

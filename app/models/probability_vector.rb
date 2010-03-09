@@ -6,7 +6,7 @@ class ProbabilityVector < ActiveRecord::Base
   # on create:
   # 0. abort if negative and no other users have hit the site
   # 1a. if visited_users_count > 0: update aggregate a = (a * [n-1]/n) + (value/n), users_count += 1; visited_users_count += 1; add pv
-  # 1b. if not: create PVs for all other users' negative tests; update aggreagte a = 1/n, users_count = n; visited_users_count = 1; add pv
+  # 1b. if not: create PVs for all other users' negative tests; update aggregate a = 1/n, users_count = n; visited_users_count = 1; add pv
   
   # on update:
   # 1. increment tests; increment hits if true
@@ -74,6 +74,5 @@ class ProbabilityVector < ActiveRecord::Base
       self.import [:site_id, :user_id, :tests, :hits, :avg], new_pvs, :validate => false, :on_duplicate_key_update => [:tests, :hits, :avg] if !new_pvs.empty?
     end
   end
-  
   
 end

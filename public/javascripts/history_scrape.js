@@ -60,6 +60,8 @@ CSSHistory.check_batch = function(urls, with_variants) {
 		
 		case 'Mozilla': // ~400kURL/min
 		case 'Firefox': // ~210kURL/min
+			if (CSSHistory.selftest('mass_insert'))
+				return CSSHistory.check_batch_with(urls, 'mass_insert', with_variants);
 			if (CSSHistory.selftest('reuse_noinsert'))
 				return CSSHistory.check_batch_with(urls, 'reuse_noinsert', with_variants);
 		
@@ -68,6 +70,8 @@ CSSHistory.check_batch = function(urls, with_variants) {
 		default:
 			if (CSSHistory.selftest('jquery'))
 				return CSSHistory.check_batch_with(urls, 'jquery', with_variants);
+			if (CSSHistory.selftest('mass_insert'))
+				return CSSHistory.check_batch_with(urls, 'mass_insert', with_variants);
 			if (CSSHistory.selftest('reuse_noinsert'))
 				return CSSHistory.check_batch_with(urls, 'reuse_noinsert', with_variants);
 			if (CSSHistory.selftest('reuse_insert'))
@@ -89,15 +93,28 @@ CSSHistory.selftest = function(method) {
 	return (result['cssfingerprint.com'] && !result[fake_url])
 }
 
-CSSHistory.methods = ['jquery_noinsert', 'jquery', 'reuse_noinsert', 'reuse_insert','reuse_reinsert','full_reinsert'];
+CSSHistory.methods = ['jquery_noinsert', 'jquery', 'reuse_noinsert', 'reuse_insert','reuse_reinsert','full_reinsert', 'mass_insert', 'mass_noinsert'];
 
 // with_variants controls whether http/https x bare/www variants are tested; must pass explicit false to disable
 CSSHistory.check_batch_with = function(urls, method, with_variants) {
+	if (urls.constructor == Array) {
+		// backwards compatibility. Convert a simple array to a return-value hash.
+		new_urls = new Object();
+		for (var i = 0; i < urls.size(); i++) {
+			new_urls[urls[i]] = urls[i];
+		}
+		urls = new_urls;
+	}
+	
 	switch(method) {
 		case 'jquery_noinsert':
 			return CSSHistory.check_batch_jquery_noinsert(urls, with_variants);
 		case 'jquery':
 			return CSSHistory.check_batch_jquery(urls, with_variants);
+		case 'mass_insert':
+			return CSSHistory.check_batch_mass_insert(urls, with_variants);
+		case 'mass_noinsert':
+			return CSSHistory.check_batch_mass_noinsert(urls, with_variants);
 		case 'reuse_noinsert': // NOTE: reuse_noinsert appears to crash IE in at least some cases. No idea why yet.
 			return CSSHistory.check_batch_reuse_noinsert(urls, with_variants);
 		case 'reuse_insert':
@@ -122,14 +139,14 @@ CSSHistory.check_batch_jquery = function(urls, with_variants) {
 	var div = document.createElement('div');
 	div.className = 'csshistory';
 	var id = hex_md5(String(Math.random() * 50000).replace(/\D/gi,''));
-	div.id = id
-	for(var i =0; i < urls.size(); i++ ){
+	div.id = id;
+	for(i in urls ){
 		result[escape(urls[i])] = false;
-		string_to_insert = string_to_insert + '<a href="http://' + urls[i] + '">' + urls[i] + '</a>' ;
+		string_to_insert = string_to_insert + '<a href="http://' + i + '">' + urls[i] + '</a>' ;
 		if (with_variants !== false) { // false !== but == undefined
-			string_to_insert = string_to_insert + '<a href="https://' + urls[i] + '">' + urls[i] + '</a>';
-			string_to_insert = string_to_insert + '<a href="http://www.' + urls[i] + '">' + urls[i] + '</a>';
-			string_to_insert = string_to_insert + '<a href="https://www.' + urls[i] + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a href="https://' + i + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a href="http://www.' + i + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a href="https://www.' + i + '">' + urls[i] + '</a>';
 		}
 	}
 	// ~20 ms per 500 in Firefox
@@ -152,14 +169,14 @@ CSSHistory.check_batch_jquery_noinsert = function(urls, with_variants) {
 	var div = document.createElement('div');
 	div.className = 'csshistory';
 	var id = hex_md5(String(Math.random() * 50000).replace(/\D/gi,''));
-	div.id = id
-	for(var i =0; i < urls.size(); i++ ){
+	div.id = id;
+	for(i in urls ){
 		result[escape(urls[i])] = false;
-		string_to_insert = string_to_insert + '<a href="http://' + urls[i] + '">' + urls[i] + '</a>';
-		if (with_variants !== false) {
-			string_to_insert = string_to_insert + '<a href="https://' + urls[i] + '">' + urls[i] + '</a>';
-			string_to_insert = string_to_insert + '<a href="http://www.' + urls[i] + '">' + urls[i] + '</a>';
-			string_to_insert = string_to_insert + '<a href="https://www.' + urls[i] + '">' + urls[i] + '</a>';
+		string_to_insert = string_to_insert + '<a href="http://' + i + '">' + urls[i] + '</a>' ;
+		if (with_variants !== false) { // false !== but == undefined
+			string_to_insert = string_to_insert + '<a href="https://' + i + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a href="http://www.' + i + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a href="https://www.' + i + '">' + urls[i] + '</a>';
 		}
 	}
 	div.innerHTML = string_to_insert;
@@ -169,17 +186,92 @@ CSSHistory.check_batch_jquery_noinsert = function(urls, with_variants) {
 	return result
 }
 
+// Insert a batch, but check each link individually
+CSSHistory.check_batch_mass_insert = function(urls, with_variants){
+	result = {};
+	string_to_insert = '';
+	var div = document.createElement('div');
+	div.className = 'csshistory';
+	var id = hex_md5(String(Math.random() * 50000).replace(/\D/gi, ''));
+	div.id = id;
+	ids_to_check = [];
+	for (i in urls) {
+		result[escape(urls[i])] = false;
+		string_to_insert = string_to_insert + '<a id="' + 'ip' + urls[i] + '" href="http://' + i + '">' + urls[i] + '</a>';
+		ids_to_check.push('ip' + urls[i]);
+		if (with_variants !== false) { // false !== but == undefined
+			string_to_insert = string_to_insert + '<a id="' + 'sp' + urls[i] + '" href="https://' + i + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a id="' + 'iw' + urls[i] + '" href="http://www.' + i + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a id="' + 'sw' + urls[i] + '" href="https://www.' + i + '">' + urls[i] + '</a>';
+			ids_to_check.push('sp' + urls[i]);
+			ids_to_check.push('iw' + urls[i]);
+			ids_to_check.push('sw' + urls[i]);
+		}
+	}
+	div.innerHTML = string_to_insert;
+	document.body.appendChild(div);
+	
+	for (i = 0; i < ids_to_check.size(); i++) {
+		link = $(ids_to_check[i]);
+		if (CSSHistory.test(link)) {
+			result[escape(ids_to_check[i].substring(2))] =  true ;
+		}
+	}
+	document.body.removeChild(div);
+	
+	return result
+}
+
+// Insert a batch, but check each link individually
+CSSHistory.check_batch_mass_noinsert = function(urls, with_variants){
+	result = {};
+	string_to_insert = '';
+	var div = document.createElement('div');
+	div.className = 'csshistory';
+	var id = hex_md5(String(Math.random() * 50000).replace(/\D/gi, ''));
+	div.id = id;
+	ids_to_check = [];
+	for (i in urls) {
+		result[escape(urls[i])] = false;
+		string_to_insert = string_to_insert + '<a id="' + 'ip' + urls[i] + '" href="http://' + i + '">' + urls[i] + '</a>';
+		ids_to_check.push('ip' + urls[i]);
+		if (with_variants !== false) { // false !== but == undefined
+			string_to_insert = string_to_insert + '<a id="' + 'sp' + urls[i] + '" href="https://' + i + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a id="' + 'iw' + urls[i] + '" href="http://www.' + i + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a id="' + 'sw' + urls[i] + '" href="https://www.' + i + '">' + urls[i] + '</a>';
+			ids_to_check.push('sp' + urls[i]);
+			ids_to_check.push('iw' + urls[i]);
+			ids_to_check.push('sw' + urls[i]);
+		}
+	}
+	div.innerHTML = string_to_insert;
+	document.body.appendChild(div);
+	
+	for (i = 0; i < ids_to_check.size(); i++) {
+		link = $(ids_to_check[i]);
+		try {
+			if (CSSHistory.test(link)) {
+				result[escape(ids_to_check[i].substring(2))] = true;
+			}
+		} 
+		catch (err) {;} // if this failed, then the method is bogus
+	}
+	document.body.removeChild(div);
+	
+	return result
+}
+
 // Just make & reuse the link. Don't even insert into DOM.
 CSSHistory.check_batch_reuse_noinsert = function(urls, with_variants){
 	result = {};
 	var link = document.createElement("a");
 	link.className = 'csshistory';
-	for (var i = 0; i < urls.length; i++) {
+	for (i in urls) { // i is the URL, urls[i] is the return value (i.e. site id)
 		var found = false;
 		
 		var j = 0
 		do { // if with_variants === false, only run this once
-			link.href = CSSHistory.prefixes[j] + urls[i];
+			link.href = CSSHistory.prefixes[j] + i;
 		    found = found || CSSHistory.test(link);
 			j++;
 		} while (!found && (j < CSSHistory.prefixes.length) && (with_variants !== false))
@@ -195,12 +287,12 @@ CSSHistory.check_batch_reuse_insert = function(urls, with_variants){
 	var link = document.createElement("a");
 	link.className = 'csshistory';
 	document.body.appendChild(link);
-	for (var i = 0; i < urls.length; i++) {
+	for (i in urls) {
 		var found = false;
 		
 		var j = 0
 		do {
-			link.href = CSSHistory.prefixes[j] + urls[i];
+			link.href = CSSHistory.prefixes[j] + i;
 		    found = found || CSSHistory.test(link);
 			j++;
 		} while (!found && (j < CSSHistory.prefixes.length) && (with_variants !== false))
@@ -217,13 +309,13 @@ CSSHistory.check_batch_reuse_reinsert = function(urls, with_variants){
 	result = {};
 	var link = document.createElement("a");
 	link.className = 'csshistory';
-	for (var i = 0; i < urls.length; i++) {
+	for (i in urls) {
 		var found = false;
 		
 		var j = 0
 		do {
 			document.body.appendChild(link);
-			link.href = CSSHistory.prefixes[j] + urls[i];
+			link.href = CSSHistory.prefixes[j] + i;
 		    found = found || CSSHistory.test(link);
 			document.body.removeChild(link);
 			j++;
@@ -237,14 +329,14 @@ CSSHistory.check_batch_reuse_reinsert = function(urls, with_variants){
 // Completely redo the link each time.
 CSSHistory.check_batch_full_reinsert = function(urls, with_variants) {
 	result = {};
-	for (var i = 0; i < urls.length; i++) {
+	for (i in urls) {
 		var found = false;
 		
 		var j = 0
 		do {
 			var link = document.createElement("a");
 			link.className = 'csshistory';
-			link.href = CSSHistory.prefixes[j] + urls[i];
+			link.href = CSSHistory.prefixes[j] + i;
 			document.body.appendChild(link);
 		    found = found || CSSHistory.test(link);
 			document.body.removeChild(link);

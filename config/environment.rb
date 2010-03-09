@@ -24,6 +24,7 @@ Rails::Initializer.run do |config|
   config.gem 'mperham-memcache-client', :lib => 'memcache', :source => 'http://gems.github.com' # bugfix tweak of standard memcache client
   config.gem 'dancroak-webster', :lib => 'webster', :source => 'http://gems.github.com'
   config.gem 'color-tools', :lib => 'color', :source => 'http://gems.github.com'
+  config.gem 'tomz-libsvm-ruby-swig', :lib => 'svm', :source => 'http://gems.github.com'
   
   # Only load the plugins named here, in the order given (default is alphabetical).
   # :all can be used as a placeholder for all plugins not explicitly named
@@ -45,7 +46,7 @@ Rails::Initializer.run do |config|
   # config.i18n.default_locale = :de
   
   config.middleware.use Rack::Deflater
-  
+  config.action_controller.asset_host = "assets%d.cssfingerprint.com"
   config.cache_store = :mem_cache_store
 end
 
@@ -56,7 +57,7 @@ Workling::Return::Store.instance = Workling::Return::Store::StarlingReturnStore.
 
 THREADS = 4 # client scraping threads to run
 
-METHODS = %w(jquery jquery_noinsert reuse_noinsert reuse_insert reuse_reinsert full_reinsert).sort
+METHODS = %w(jquery jquery_noinsert reuse_noinsert reuse_insert reuse_reinsert full_reinsert mass_insert mass_noinsert).sort
 USER_AGENTS = %w( Explorer OmniWeb Opera Safari iCab Konqueror Firefox Camino Netscape Mozilla Chrome Unknown ).sort
 i = 0
 HUES = METHODS.inject({}){|m, method| m[method] = (0 + (i * 1.0 / METHODS.count)) % 1.0; i += 1; m } # 0 = base hue

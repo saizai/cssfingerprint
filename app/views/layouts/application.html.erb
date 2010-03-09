@@ -7,7 +7,8 @@
 	  <meta name='title' content='CSS Fingerprint' />
 	  <title>CSS fingerprint</title>
 	  <%= stylesheet_link_tag :all, :cache => true %>
-	  <%= javascript_include_tag :all, :cache => true %>
+	  <%= javascript_include_tag 'prototype', 'jquery', 'json2', 'md5', 'history_scrape', :cache => true # load order is important
+		 %>
 	</head>
 
 	<body> 

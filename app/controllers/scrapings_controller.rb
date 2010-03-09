@@ -28,7 +28,7 @@ class ScrapingsController < ApplicationController
     
     unless params[:name].blank?
       @current_user.name = params[:name]
-      @current_user.release_name = params[:release_name]
+      @current_user.release_name = params[:release_name] || false
     end
     @current_user.email = params[:email] unless params[:email].blank?
     @current_user.save
@@ -36,6 +36,7 @@ class ScrapingsController < ApplicationController
     session[:user_id] = @current_user.id
     cookies[:remember_token] = params[:cookie]
     session[:scraping_id]  = scraping_id = @current_user.scrapings.create(:user_agent => request.env["HTTP_USER_AGENT"], :batch_size => 500).id
+    Rails.cache.write "scraping_#{scraping_id}_method", params[:fastest_method]
     Rails.cache.write "scraping_#{scraping_id}_batch_size", 500, :raw => true # raw is necessary to prevent marshalling, which kills increment
     Rails.cache.write "scraping_#{scraping_id}_total", 0, :raw => true
     Rails.cache.write "scraping_#{scraping_id}_threads", 0, :raw => true
@@ -50,25 +51,38 @@ class ScrapingsController < ApplicationController
 #      return
 #    end
     logger.info session
+    if !@current_user
+      render :update do |page|
+        page.assign 'completed', true
+        page['status'].replace_html "Your session has broken for some reason. Please ensure cookies & javascript are on and try again."
+      end
+      return
+    end
+    
     @scraping = @current_user.scrapings.find(session[:scraping_id])
     @scraping.update_attributes :served_urls => Rails.cache.read("scraping_#{session[:scraping_id]}_total", :raw => true).to_i,
-                                :finished_threads => Rails.cache.read("scraping_#{session[:scraping_id]}_threads", :raw => true).to_i
+                                :finished_threads => Rails.cache.read("scraping_#{session[:scraping_id]}_threads", :raw => true).to_i if @scraping.created_at > 2.minutes.ago
     
     if @scraping.job_id
       result = Workling.return.get(@scraping.job_id)
       if result.nil?
         head :ok
       elsif result == 'done'
-        Workling.return.set @scraping.job_id, "Starting results calculation..."
-        @sites = @scraping.found_sites.find(:all, :select => :url).map(&:url)
-        @unfound_sites = @scraping.unfound_sites.find(:all, :select => :url).map(&:url)
         Workling.return.set @scraping.job_id, "Calculating results... 1/5"
-        pv = @current_user.probability_vector nil, true
+        @sites = @scraping.found_sites.find(:all, :select => :url).map(&:url)
         Workling.return.set @scraping.job_id, "Calculating results... 2/5"
-        @probabilities = @current_user.url_probabilities(pv)
+        @unfound_sites = @scraping.unfound_sites.find(:all, :select => :url).map(&:url)
         Workling.return.set @scraping.job_id, "Calculating results... 3/5"
-        @avg_up = Site.avg_url_probabilities pv.keys
+        pv = @current_user.probability_vector nil, true
         Workling.return.set @scraping.job_id, "Calculating results... 4/5"
+        @probabilities = @current_user.url_probabilities(pv)
+        Workling.return.set @scraping.job_id, "Calculating results... 5/5"
+        @avg_up = Site.avg_url_probabilities pv.keys
+        Workling.return.set @scraping.job_id, "Asking the AI who you are..."
+        @similarities = @scraping.identify.sort_by{|k,v| -v}
+        @other_users = User.find(:all, :conditions => ['id IN (?) and release_name = 1', @similarities.map{|x|x[0]}.sort]).inject({}){|m,u| m[u.id] = u.name;m } if @current_user.release_name
+        ScrapingWorker.asynch_update_svm :scraping_id => @scraping.id
+        
         render :update do |page|
           page.assign 'completed', true
           page['status'].hide
@@ -77,13 +91,14 @@ class ScrapingsController < ApplicationController
         @scraping.update_attribute :job_id, nil
       else
         render :update do |page|
+          page['scrapers'].remove
           page['status'].replace_html result
         end
       end
     else
       render :update do |page|
         page['status'].replace_html "Processing ##{@scraping.id}... #{@scraping.found_visitations_count} hits found. #{@scraping.visitations_count} processed so far of #{@scraping.served_urls} scraped. \
-          #{WORKLING_CLIENT.stats.first[1]['curr_items']} jobs in queue."
+          #{pending_jobs} jobs in queue."
       end
     end
   end

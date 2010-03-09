@@ -1,7 +1,7 @@
 <%= update_page do |page|
 	effective_threads.times do |i|
-		page.insert_html :bottom, 'scrapers', "<iframe style='float: left; width: 1px; height: 1px; border: none;' 
-				src='#{ autoscrape_visitations_url(:thread_id => i) }'>" # , :host => "#{i}.cssfingerprint.com" 
+		page.insert_html :bottom, 'scrapers', "<iframe id='scraper_thread_#{ i }' style='float: left; height: 1.5em; clear:both; margin: 0; buffer: 0; border: none; overflow: hidden;' 
+				src='#{ autoscrape_visitations_url(:thread_id => i, :host => i.to_s + '.cssfingerprint.com') }'>" 
 	end
 	page.assign 'completed', false
 end %>

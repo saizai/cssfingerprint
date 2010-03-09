@@ -16,4 +16,13 @@ class Scraping < ActiveRecord::Base
   def split_agent
     BrowserTest.split_agent_for self
   end
+  
+  def identify
+    model = Model.new(File.join(RAILS_ROOT, 'css_svm_model.txt'))
+    used_sites = Site.find(:all, :conditions => 'avg_visited < 0', :select => 'id').map(&:id).sort
+    test = self.visitations.find(:all, :conditions => ['site_id IN (?)', used_sites ]).inject({}){|m,x| m[x.site_id] = (x.visited ? 1 : 0).to_f; m}
+    pred, probs = model.predict_probability test
+    probs
+  end
+  
 end

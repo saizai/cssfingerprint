@@ -21,7 +21,7 @@ class BrowserTest < ActiveRecord::Base
     # cf. http://code.google.com/apis/chart/
     google_url = "http://chart.apis.google.com/chart?cht=lxy&chs=750x400"
     
-    grouped_results = results.group_by{|x| x[:method] + ' / ' + x[:browser]}.sort_by{|k,v| v[0][:method] + ' / ' + v[0][:browser]}.map{|k,v| [k, v.sort_by{|y| y[:batch_size] }] }
+    grouped_results = results.group_by{|x| "#{x[:method]} / #{x[:browser]}"}.sort_by{|k,v| v[0][:method] + ' / ' + v[0][:browser]}.map{|k,v| [k, v.sort_by{|y| y[:batch_size] }] }
     
     # calculate z-scores
     # S.D. = sqrt( mean of squares - square of mean )
@@ -43,7 +43,7 @@ class BrowserTest < ActiveRecord::Base
       v.map{|x| senc((61.999*(x[:zscore]-ymin)/(ymax-ymin)).to_i)}.join # no delimiters within one dataset except between xdata & ydata
     }.join(',')
     
-    sd_markers = [-3,-2,-1,0,1,2,3].select{|x| x > ymin and x < ymax}
+    sd_markers = (-10..10).select{|x| x > ymin and x < ymax}
     sd_locations = sd_markers.map{|x| (100.999*(x-ymin)/(ymax-ymin)).to_i }
     sd_range = [-1,0,1].map{|x| sd_locations[sd_markers.index(x)] / 100.0}
     

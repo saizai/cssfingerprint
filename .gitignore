@@ -8,6 +8,7 @@ db/*.sqlite3
 db/*.db
 db/schema.rb
 config/initializers/*_keys.rb
+config/initializers/session_store.rb
 .tmp*
 public/files/
 public/javascripts/all*.js

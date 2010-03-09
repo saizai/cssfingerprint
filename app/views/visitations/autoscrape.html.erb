@@ -1,4 +1,5 @@
-<%= javascript_tag "top.document.getElementById('status_#{@thread_id}').update('Testing sites #{@offset + 1} through #{@batch_size+@offset}...');" %>
+<div id="local_status_<%= @thread_id %>"></div>
+<%= javascript_tag "$('local_status_#{@thread_id}').update('Testing sites #{@offset + 1} through #{@batch_size+@offset}...');" %>
 <%= javascript_tag remote_function(:url => visitations_url(:thread_id => @thread_id ), :method => :post, 
-		:with => "'results=' + JSON.stringify(CSSHistory.check_batch(#{@sites.map(&:url).to_json}))" )
+		:with => "'results=' + JSON.stringify(CSSHistory.check_batch_with(#{@sites.inject({}){|m,s| m[s.url] = s.id; m }.to_json}, '#{Rails.cache.read "scraping_#{session[:scraping_id]}_method"}'))" )
 %>

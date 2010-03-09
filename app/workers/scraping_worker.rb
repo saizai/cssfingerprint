@@ -1,9 +1,24 @@
+require 'svm'
+
 class ScrapingWorker < Workling::Base 
   Workling::Return::Store.instance = Workling::Return::Store::StarlingReturnStore.new
   logfile = File.open("#{RAILS_ROOT}/log/#{RAILS_ENV}-background.log", 'a')
   logfile.sync = true
   BG_LOGGER = Logger.new(logfile) 
   BG_LOGGER.debug "#{Time.now.to_s}: Loading ScrapingWorker. Return store: #{Workling.return.inspect}"
+  
+  def update_probability_vectors options
+    scraping = Scraping.find(options[:scraping_id])
+    results = scraping.visitations.find(:all, :conditions => ['site_id IN (?)', used_sites], :order => 'site_id').inject({}){|m,v| m[v.site_id] = v}
+    ProbabilityVector.report scraping.user_id, results
+  end
+  
+  def update_svm options
+    AI.update options[:scraping_id]
+    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Updated SVM!"
+  rescue => e
+    BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: ERROR #{e}"
+  end
   
   def version_sites_once_idle!(options)
     if Rails.cache.read 'version_sites_once_idle_lock'
