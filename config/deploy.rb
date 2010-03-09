@@ -66,7 +66,7 @@ namespace (:deploy) do
     # run "mkdir #{shared_path}/ai"
     run "ln -nfs #{shared_path}/ai #{release_path}/db/ai"
   end
-  
+    
   # Set up special permissions
 #  after "deploy:update_code", "deploy:set_permissions_staging"
 #  task :set_permissions_staging, :except => { :no_release => true } do 
