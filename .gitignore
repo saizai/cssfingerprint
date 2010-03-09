@@ -21,3 +21,4 @@ config/mail.yml
 tmp/*
 *.lock
 
+db/ai/

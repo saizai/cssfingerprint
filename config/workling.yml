@@ -12,7 +12,7 @@ production:
     sessions: false
     fragments: false
     servers: localhost:11211
-    ETH: en0 
+    ETH: lo
 
 development:
   listens_on: localhost:15151

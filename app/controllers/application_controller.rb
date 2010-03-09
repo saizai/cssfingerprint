@@ -22,7 +22,7 @@ class ApplicationController < ActionController::Base
   
   
   def pending_jobs
-    sock = TCPSocket.new('localhost', 15151)
+    sock = TCPSocket.new('localhost', (Rails.env.production ? 22122 : 15151))
     sock.print("stats\r\n")
     sock.flush
     jobs = nil
