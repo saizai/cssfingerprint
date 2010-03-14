@@ -22,3 +22,5 @@ tmp/*
 *.lock
 
 db/ai/
+db/Quantcast*
+wtikay*
