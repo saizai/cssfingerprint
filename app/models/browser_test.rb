@@ -29,7 +29,7 @@ class BrowserTest < ActiveRecord::Base
     
     means = grouped_results.map{|k,a| a.map{|x| x[:timing] }.mean }
     sds = grouped_results.map{|k,a| Math.sqrt(a.map{|x| x[:timing] ** 2}.mean - (a.map{|x| x[:timing]}.mean ** 2)) }
-    grouped_results.each_with_index{|g,i| g[1].map{|r| r[:zscore] = (r[:timing] - means[i]) / sds[i]  } }
+    grouped_results.each_with_index{|g,i| g[1].map{|r| r[:zscore] = (sds[i] == 0 ? 0 : (r[:timing] - means[i]) / sds[i] ) } } # if sd = 0, call the zscore 0 to prevent NaNs
     
     # Scaling.
     xmax = results.map{|x|x[:batch_size]}.max 
