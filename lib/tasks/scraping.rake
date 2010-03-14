@@ -92,7 +92,7 @@ namespace :scraping do
           quantcast = []
         end
       end
-      Site.import [:quantcast_rank, :url], quantcast, :validate => false, :on_duplicate_key_update => [:quantcast_rank]
+      Site.import [:quantcast_rank, :url], quantcast, :validate => false, :on_duplicate_key_update => [:quantcast_rank] unless quantcast.empty?
     end
   end
   
@@ -106,7 +106,7 @@ namespace :scraping do
     end
   end
   
-  dec "WTIKAY bootstrapped URLs (temporary)"
+  desc "WTIKAY bootstrapped URLs (temporary)"
   task :wtikay => :environment do
     # require 'fastercsv'
     require 'net/http'

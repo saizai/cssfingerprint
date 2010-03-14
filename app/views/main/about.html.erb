@@ -113,7 +113,7 @@
 	<ul class="multi">
 		<% @popular_sites.each do |site| %>
 			<li>
-				<%= number_to_percentage -site.avg_visited * 100, :precision => 0 %>
+				<%= number_to_percentage site.avg_visited * 100, :precision => 0 %>
 				<%= link_to site.url, 'http://' + site.url, :style => "text-decoration:none;" %>
 			</li>
 		<% end %>
