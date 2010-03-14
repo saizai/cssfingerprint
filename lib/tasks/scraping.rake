@@ -17,6 +17,96 @@ namespace :scraping do
     end
   end
   
+  desc "Bloglines top 1000"
+  task :bloglines => :environment do
+    require 'rubygems'
+    require 'scrubyt'
+    with_lock do
+      bloglines = Scrubyt::Extractor.define do
+        fetch 'http://beta.bloglines.com/topfeeds'
+        
+        site "//div[@class='bl_dataUnit']" do
+          rank "//div[@class='bl_nameRank']" do
+            rank /\d+/
+            name "//a" 
+          end
+          url "//div[@class='bl_subItem bl_subscribe']//a[@title='Subscribe to Feed']/@href"
+        end
+        
+        next_page "//a[@title='Next >>']", :limit => 10
+      end
+      
+      Feed.import [:bloglines_rank, :url, :name], bloglines.to_hash.map{|x| [x[:rank].to_i, x[:url], x[:name]]}, :validate => false, :on_duplicate_key_update => [:bloglines_rank, :name] 
+    end
+  end
+  
+  desc "Google PageRank"
+  task :google => :environment do
+    require 'pagerank'
+    with_lock do
+      g = Google::PageRank.new(nil)
+      
+      Site.find_each do |s|
+        s.update_attribute :google_rank, g.page_rank(s.url)
+      end
+    end
+  end
+  
+  desc "Top 100 Technorati blogs"
+  task :technorati => :environment do
+    require 'rubygems'
+    require 'scrubyt'
+    with_lock do
+      technorati = Scrubyt::Extractor.define do
+        fetch 'http://technorati.com/blogs/top100/'
+        
+        link_title "//td[@class='site-details']" do
+          link_url "//a[@class='offsite']"
+        end
+    
+        next_page "//a[@class='next']", :limit => 5
+      end
+      
+      Site.import [:technorati_rank, :url], technorati.to_hash.map{|x| [0, x[:link_url].sub('http://www.', '').sub('http://','').sub(/\/$/, '')]}, 
+          :validate => false, :on_duplicate_key_update => [:techonrati_rank] 
+    end
+  end
+  
+  desc "Quantcast top million"
+  task :quantcast => :environment do
+    with_lock do
+      FileUtils.rm(File.join(RAILS_ROOT, 'db', 'quantcast-top-million.zip')) rescue true
+      FileUtils.rm(File.join(RAILS_ROOT, 'db', 'Quantcast-Top-Million.txt')) rescue true
+      `cd #{File.join(RAILS_ROOT, 'db')} && wget http://www.quantcast.com/quantcast-top-million.zip`
+      `cd #{File.join(RAILS_ROOT, 'db')} && unzip -o quantcast-top-million.zip`
+      `cd #{File.join(RAILS_ROOT, 'db')} && tail -n +7 Quantcast-Top-Million.txt > Quantcast-Top-Million_preprocessed.txt`
+      puts "Importing in 1000x batches... "
+      quantcast = []
+      i = 0
+      FasterCSV.foreach(File.join(RAILS_ROOT, 'db', 'Quantcast-Top-Million_preprocessed.txt'), :col_sep => "\t") do |row|
+        quantcast << row
+        i += 1
+        if (i % 1000) == 0
+          print "."; STDOUT.flush
+          Site.import [:quantcast_rank, :url], quantcast, :validate => false, :on_duplicate_key_update => [:quantcast_rank]
+          quantcast = []
+        end
+      end
+      Site.import [:quantcast_rank, :url], quantcast, :validate => false, :on_duplicate_key_update => [:quantcast_rank]
+    end
+  end
+  
+  desc "Quantcast demographics (age, children, education, ethnicity, gender, income)"
+  task :quantcast_demographics => :environment do
+    include Quantcast
+    with_lock do
+      Site.find_each :conditions => 'quantcast_rank > 0' do |site|
+        update_demographics_for site
+      end
+    end
+  end
+  
+  dec "WTIKAY bootstrapped URLs (temporary)"
   task :wtikay => :environment do
     # require 'fastercsv'
     require 'net/http'
@@ -43,85 +133,21 @@ namespace :scraping do
     f.close
   end
   
-  task :quantcast => :environment do
-    with_lock do
-      FileUtils.rm(File.join(RAILS_ROOT, 'db', 'quantcast-top-million.zip'))
-      FileUtils.rm(File.join(RAILS_ROOT, 'db', 'Quantcast-Top-Million.txt'))
-      `cd #{File.join(RAILS_ROOT, 'db')} && wget http://www.quantcast.com/quantcast-top-million.zip`
-      `cd #{File.join(RAILS_ROOT, 'db')} && unzip -o quantcast-top-million.zip`
-      `cd #{File.join(RAILS_ROOT, 'db')} && tail -n +7 Quantcast-Top-Million.txt > Quantcast-Top-Million_preprocessed.txt`
-      puts "Importing..."
-      quantcast = []
-      i = 0
-      FasterCSV.foreach(File.join(RAILS_ROOT, 'db', 'Quantcast-Top-Million_preprocessed.txt'), :col_sep => "\t") do |row|
-        quantcast << row
-        if (i % 200) == 0
-          Site.import [:alexa_rank, :url], quantcast, :validate => false, :on_duplicate_key_update => [:quantcast_rank]
-          quantcast = []
-        end
-      end
-      Site.import [:alexa_rank, :url], quantcast, :validate => false, :on_duplicate_key_update => [:quantcast_rank]
-    end
-  end
   
-  desc "Import top 100 Technorati blogs"
-  task :technorati => :environment do
-    require 'rubygems'
-    require 'scrubyt'
-    with_lock do
-      technorati = Scrubyt::Extractor.define do
-        fetch 'http://technorati.com/blogs/top100/'
-        
-        link_title "//td[@class='site-details']" do
-          link_url "//a[@class='offsite']"
-        end
-    
-        next_page "//a[@class='next']", :limit => 5
-      end
-      
-      Site.import [:technorati_rank, :url], technorati.to_hash.map{|x| [0, x[:link_url].sub('http://www.', '').sub('http://','').sub(/\/$/, '')]}, 
-          :validate => false, :on_duplicate_key_update => [:techonrati_rank] 
-    end
-  end
-  
-  task :bloglines => :environment do
-    require 'rubygems'
-    require 'scrubyt'
-    with_lock do
-      bloglines = Scrubyt::Extractor.define do
-        fetch 'http://beta.bloglines.com/topfeeds'
-        
-        site "//div[@class='bl_dataUnit']" do
-          rank "//div[@class='bl_nameRank']" do
-            rank /\d+/
-            name "//a" 
-          end
-          url "//div[@class='bl_subItem bl_subscribe']//a[@title='Subscribe to Feed']/@href"
-        end
-        
-        next_page "//a[@title='Next >>']", :limit => 10
-      end
-      
-      Feed.import [:bloglines_rank, :url, :name], bloglines.to_hash.map{|x| [x[:rank].to_i, x[:url], x[:name]]}, :validate => false, :on_duplicate_key_update => [:bloglines_rank, :name] 
-    end
-  end
-  
-  task :google => :environment do
-    require 'pagerank'
-    with_lock do
-      g = Google::PageRank.new(nil)
-      
-      Site.find_each do |s|
-        s.update_attribute :google_rank, g.page_rank(s.url)
-      end
-    end
-  end
-  
+  desc "Refresh the total rank based on all available a priori rankings"
   task :summarize => :environment do
     with_lock do
       Site.update_all "total_rank = ifnull(alexa_rank,((1000000 - alexa_rank) / 1000000.0)), 0) + ifnull(google_rank,((10-google_rank)/10.0),0)"
     end
   end
+  
+  desc "Warm up the database"
+  task :warm_db => :environment do
+    300.times{|i| Site.get 500 * i }
+  end
+  
+  
+  private
   
   def with_lock
     raise "Lockfile found" if File.exist?(File.join(RAILS_ROOT, 'update.lock'))
@@ -135,10 +161,5 @@ namespace :scraping do
     end
     
     Site.version!
-  end
-  
-  desc "Warm up the database"
-  task :warm_db => :environment do
-    300.times{|i| Site.get 500 * i }
   end
 end
