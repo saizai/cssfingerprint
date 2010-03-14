@@ -53,15 +53,16 @@ CSSHistory.test = function(link) {
 // If all methods are bogus, then return nothing
 CSSHistory.check_batch = function(urls, with_variants) {
 	switch(BrowserDetect.browser) {
-		case 'Opera': // ~210kURL/min
 		case 'Chrome': // ~2MURL/min (!!)
 			if (CSSHistory.selftest('reuse_insert'))
 				return CSSHistory.check_batch_with(urls, 'reuse_insert', with_variants);
 		
-		case 'Mozilla': // ~400kURL/min
+		case 'Opera': // ~210kURL/min
 		case 'Firefox': // ~210kURL/min
 			if (CSSHistory.selftest('mass_insert'))
 				return CSSHistory.check_batch_with(urls, 'mass_insert', with_variants);
+		
+		case 'Mozilla': // ~400kURL/min
 			if (CSSHistory.selftest('reuse_noinsert'))
 				return CSSHistory.check_batch_with(urls, 'reuse_noinsert', with_variants);
 		
