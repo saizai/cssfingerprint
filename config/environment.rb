@@ -67,3 +67,4 @@ LUMINOSITIES = USER_AGENTS.inject({}){|m, method| m[method] = (i * 0.5 / (USER_A
 
 WORKLING_CLIENT = Workling::Clients::MemcacheQueueClient.new
 WORKLING_CLIENT.connect
+

@@ -44,7 +44,7 @@ class Site < ActiveRecord::Base
   end
   
   def self.version!
-    Rails.cache.increment 'sites_version', 1
+    Rails.cache.increment 'sites_version', 1 unless  File.exist?(File.join(RAILS_ROOT, 'update.lock'))
   end
   
   def self.get offset, batch_size = 500

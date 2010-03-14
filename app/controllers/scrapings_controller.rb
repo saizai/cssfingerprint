@@ -4,8 +4,8 @@ class ScrapingsController < ApplicationController
   end
   
   def create
-    if File.exist?(File.join(RAILS_ROOT, 'update.lock'))
-      @error_msg = "Our sites database is currently being updated. Please wait a few minutes and try again."
+    if File.exist?(File.join(RAILS_ROOT, 'total.lock'))
+      @error_msg = "The site is currently being updated. Please wait a few minutes and try again."
     elsif params[:cookie].blank?
       @error_msg = "Please enter a unique code."
     else

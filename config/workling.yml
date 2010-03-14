@@ -14,8 +14,16 @@ production:
     servers: localhost:11211
     ETH: lo
 
+staging:
+  listens_on: localhost:22122
+  memcache_options:
+    sessions: false
+    fragments: false
+    servers: localhost:11211
+    ETH: en0 
+  
 development:
-  listens_on: localhost:15151
+  listens_on: localhost:22122
   memcache_options:
     sessions: false
     fragments: false

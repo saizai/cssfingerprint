@@ -11,7 +11,7 @@ class AddProbabilityVectors < ActiveRecord::Migration
     end
     
     add_index :probability_vectors, [:user_id, :site_id], :unique => true
-    remove_index :sites, [:alexa_rank, :id, :url]
+    # remove_index :sites, [:alexa_rank, :id, :url]
     add_index :sites, [:avg_visited, :alexa_rank, :id, :url], :name => :by_popularity
   end
 
