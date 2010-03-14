@@ -37,6 +37,8 @@ namespace :scraping do
       end
       
       Feed.import [:bloglines_rank, :url, :name], bloglines.to_hash.map{|x| [x[:rank].to_i, x[:url], x[:name]]}, :validate => false, :on_duplicate_key_update => [:bloglines_rank, :name] 
+      
+      # TODO: sync to site_id
     end
   end
   
@@ -66,9 +68,10 @@ namespace :scraping do
     
         next_page "//a[@class='next']", :limit => 5
       end
+      i = 0;
       
-      Site.import [:technorati_rank, :url], technorati.to_hash.map{|x| [0, x[:link_url].sub('http://www.', '').sub('http://','').sub(/\/$/, '')]}, 
-          :validate => false, :on_duplicate_key_update => [:techonrati_rank] 
+      Site.import [:technorati_rank, :url], technorati.to_hash.map{|x| i+=1; [i, x[:link_url].sub('http://www.', '').sub('http://','').sub(/\/$/, '')]}, 
+          :validate => false, :on_duplicate_key_update => [:technorati_rank] 
     end
   end
   

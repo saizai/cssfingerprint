@@ -34,4 +34,11 @@ class User < ActiveRecord::Base
     Site.find(:all, :conditions => ['id IN (?)', prob.keys]).inject({}){|m,x| m[x.url] = prob[x.id]; m }
   end
   
+  def demographics prob = nil
+    prob ||= probability_vector
+    Site.find(:all, :conditions => ['id IN (?)', prob.keys], :select => "avg(males), avg(age3_12), avg(age13_17), avg(age18_34), avg(age35_49), avg(age50plus), 
+      avg(eth_caucasian), avg(eth_african), avg(eth_asian), avg(eth_hispanic), avg(kids_0_17), avg(kids_0_2), avg(kids_3_12), avg(kids_13_17), 
+      avg(college), avg(college_grad), avg(income_0_30), avg(income_30_60), avg(income_60_100), avg(income_100_plus)", :group => '1')
+  end
+  
 end

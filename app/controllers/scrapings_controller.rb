@@ -71,7 +71,8 @@ class ScrapingsController < ApplicationController
         Workling.return.set @scraping.job_id, "Calculating results... 1/5"
         @sites = @scraping.found_sites.find(:all, :select => :url).map(&:url)
         Workling.return.set @scraping.job_id, "Calculating results... 2/5"
-        @unfound_sites = @scraping.unfound_sites.find(:all, :select => :url).map(&:url)
+# TODO: Come up with a more efficient solution. For now, loading all the unfound sites into memory is just way too expensive.
+#        @unfound_sites = @scraping.unfound_sites.find(:all, :select => :url).map(&:url)
         Workling.return.set @scraping.job_id, "Calculating results... 3/5"
         pv = @current_user.probability_vector nil, true
         Workling.return.set @scraping.job_id, "Calculating results... 4/5"
