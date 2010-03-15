@@ -68,3 +68,5 @@ LUMINOSITIES = USER_AGENTS.inject({}){|m, method| m[method] = (i * 0.5 / (USER_A
 WORKLING_CLIENT = Workling::Clients::MemcacheQueueClient.new
 WORKLING_CLIENT.connect
 
+# For composing the total a priori ranking, how we weight our different sources
+ALEXA_WEIGHT, BLOGLINES_WEIGHT, GOOGLE_WEIGHT, TECHNORATI_WEIGHT, QUANTCAST_WEIGHT = 1.0, 1.0, 1.0, 1.0, 1.0
