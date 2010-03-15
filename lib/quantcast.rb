@@ -1,5 +1,5 @@
 module Quantcast
-  require 'rmagick'
+  require 'RMagick'
   require 'base64'
   require 'net/http'
   require 'uri'

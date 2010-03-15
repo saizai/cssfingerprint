@@ -10,10 +10,19 @@ namespace :scraping do
       FileUtils.rm(File.join(RAILS_ROOT, 'db', 'top-1m.csv.zip')) rescue true
       `cd #{File.join(RAILS_ROOT, 'db')} && wget http://s3.amazonaws.com/alexa-static/top-1m.csv.zip`
       `cd #{File.join(RAILS_ROOT, 'db')} && unzip -o top-1m.csv.zip`
-      puts "Parsing..."
-      alexa = FasterCSV.read(File.join(RAILS_ROOT, 'db', 'top-1m.csv'))
-      puts "Importing..."
-      Site.import [:alexa_rank, :url], alexa, :validate => false, :on_duplicate_key_update => [:alexa_rank] 
+      puts "Importing in 1000x batches... "
+      alexa = []
+      i = 0
+      FasterCSV.foreach(File.join(RAILS_ROOT, 'db', 'top-1m.csv')) do |row|
+        alexa << row
+        i += 1
+        if (i % 1000) == 0
+          print "."; STDOUT.flush
+          Site.import [:alexa_rank, :url], alexa, :validate => false, :on_duplicate_key_update => [:alexa_rank]
+          alexa = []
+        end
+      end
+      Site.import [:alexa_rank, :url], alexa, :validate => false, :on_duplicate_key_update => [:alexa_rank] unless alexa.empty?
     end
   end
   
