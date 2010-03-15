@@ -50,7 +50,7 @@ class Site < ActiveRecord::Base
   def self.get offset, batch_size = 500
     key = "sites_#{offset}_#{batch_size}_#{self.version}"
     unless r = Rails.cache.read(key)
-      r = Site.find(:all, :limit => batch_size, :offset => offset, :order => 'avg_visited, alexa_rank', :select => 'id, url, alexa_rank, avg_visited')
+      r = Site.find(:all, :limit => batch_size, :offset => offset, :order => 'avg_visited, total_rank', :select => 'id, url, total_rank, avg_visited')
       Rails.cache.write key, r
     end
     r
