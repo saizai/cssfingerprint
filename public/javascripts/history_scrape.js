@@ -98,7 +98,7 @@ CSSHistory.selftest = function(method) {
 }
 
 CSSHistory.methods = ['jquery_noinsert', 'jquery', 'reuse_noinsert', 'reuse_insert','reuse_reinsert','full_reinsert', 
-	'mass_insert', 'mass_noinsert', 'mass_noinsert_width', 'reuse_noinsert_width', 'full_insert_width'];
+	'mass_insert', 'mass_noinsert', 'mass_noinsert_width', 'reuse_noinsert_width', 'full_reinsert_width'];
 
 // with_variants controls whether http/https x bare/www variants are tested; must pass explicit false to disable
 CSSHistory.check_batch_with = function(urls, method, with_variants) {
