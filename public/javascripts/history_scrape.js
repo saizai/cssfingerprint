@@ -97,7 +97,8 @@ CSSHistory.selftest = function(method) {
 	return (result['cssfingerprint.com'] && !result[fake_url])
 }
 
-CSSHistory.methods = ['jquery_noinsert', 'jquery', 'reuse_noinsert', 'reuse_insert','reuse_reinsert','full_reinsert', 'mass_insert', 'mass_noinsert'];
+CSSHistory.methods = ['jquery_noinsert', 'jquery', 'reuse_noinsert', 'reuse_insert','reuse_reinsert','full_reinsert', 
+	'mass_insert', 'mass_noinsert', 'mass_noinsert_width', 'reuse_noinsert_width', 'full_insert_width'];
 
 // with_variants controls whether http/https x bare/www variants are tested; must pass explicit false to disable
 CSSHistory.check_batch_with = function(urls, method, with_variants) {
@@ -129,6 +130,8 @@ CSSHistory.check_batch_with = function(urls, method, with_variants) {
 			return CSSHistory.check_batch_reuse_insert(urls, with_variants);
 		case 'reuse_reinsert':
 			return CSSHistory.check_batch_reuse_reinsert(urls, with_variants);
+		case 'full_reinsert_width':
+			return CSSHistory.check_batch_full_reinsert_width(urls, with_variants);
 		case 'full_reinsert':
 			return CSSHistory.check_batch_full_reinsert(urls, with_variants);
 	} 
@@ -411,6 +414,27 @@ CSSHistory.check_batch_full_reinsert = function(urls, with_variants) {
 	return result;
 };
 
+// Completely redo the link each time.
+CSSHistory.check_batch_full_reinsert_width = function(urls, with_variants) {
+	result = {};
+	for (i in urls) {
+		var found = false;
+		
+		var j = 0
+		do {
+			var link = document.createElement("a");
+			link.className = 'csshistory';
+			link.href = CSSHistory.prefixes[j] + i;
+			document.body.appendChild(link);
+		    found = found || CSSHistory.test_width(link);
+			document.body.removeChild(link);
+			j++;
+		} while (!found && (j < CSSHistory.prefixes.length) && (with_variants !== false))
+		
+		result[escape(urls[i])] = found;
+	};		
+	return result;
+};
 
 // timing utility 
  var timeDiff  =  {
