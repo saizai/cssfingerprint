@@ -55,7 +55,7 @@ class User < ActiveRecord::Base
   def self.demographics
     ret = Site.find(:all, :conditions => 'quantcast_rank > 0',
      :select => DEMOGRAPHICS.map{|demo| "avg(#{demo}) as avg_#{demo}, stddev(#{demo}) as sd_#{demo}" }.join(',')).first
-    DEMOGRAPHICS.inject({}){|m,v| m[v] = ret.send "avg_#{v}"; m}, DEMOGRAPHICS.inject({}){|m,v| m[v] = ret.send "sd_#{v}"; m}
+    return DEMOGRAPHICS.inject({}){|m,v| m[v] = ret.send "avg_#{v}"; m}, DEMOGRAPHICS.inject({}){|m,v| m[v] = ret.send "sd_#{v}"; m}
   end
   
   # standard normal distribution, aka Φ
