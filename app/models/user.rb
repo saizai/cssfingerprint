@@ -11,6 +11,13 @@ class User < ActiveRecord::Base
   
   before_validation :wipe_blanks
   
+  DEMOGRAPHICS = %w(males 
+               age3_12 age13_17 age18_34 age35_49 age50plus 
+               eth_caucasian eth_african eth_asian eth_hispanic 
+               kids_0_17 kids_0_2 kids_3_12 kids_13_17 
+               college college_grad 
+               income_0_30 income_30_60 income_60_100 income_100_plus).map(&:to_sym)
+  
   def wipe_blanks
     self.name = nil if name.blank?
     self.email = nil if email.blank?
@@ -19,7 +26,7 @@ class User < ActiveRecord::Base
   def probability_vector site_ids = nil, only_hits = false
     conditions = ['1=1']
     if site_ids
-      conditions[0] += ' AND site_ids IN (?)'
+      conditions[0] += ' AND site_id IN (?)'
       conditions << site_ids
     end
     if only_hits
@@ -34,11 +41,25 @@ class User < ActiveRecord::Base
     Site.find(:all, :conditions => ['id IN (?)', prob.keys]).inject({}){|m,x| m[x.url] = prob[x.id]; m }
   end
   
-  def demographics prob = nil
-    prob ||= probability_vector
-    Site.find(:all, :conditions => ['id IN (?)', prob.keys], :select => "avg(males), avg(age3_12), avg(age13_17), avg(age18_34), avg(age35_49), avg(age50plus), 
-      avg(eth_caucasian), avg(eth_african), avg(eth_asian), avg(eth_hispanic), avg(kids_0_17), avg(kids_0_2), avg(kids_3_12), avg(kids_13_17), 
-      avg(college), avg(college_grad), avg(income_0_30), avg(income_30_60), avg(income_60_100), avg(income_100_plus)", :group => '1')
+  # Average the demographics of all sites this user has visited
+  def demographics 
+    prob = probability_vector nil, true
+    avgs, sds = User.demographics
+    
+    ret = Site.find(:all, :conditions => ['id IN (?) and quantcast_rank > 0', prob.keys],
+     :select => DEMOGRAPHICS.map{|demo| "avg(sign(#{demo} - #{avgs[demo]}) * pow((#{demo} - #{avgs[demo]}) / #{sds[demo]}, 2)) as #{demo}"}.join(','), :group => nil).first
+    DEMOGRAPHICS.inject({}){|m,v| m[v] = User.std_norm_dist(ret.send v); m}
   end
   
+  # Returns avg, sd
+  def self.demographics
+    ret = Site.find(:all, :conditions => 'quantcast_rank > 0',
+     :select => DEMOGRAPHICS.map{|demo| "avg(#{demo}) as avg_#{demo}, stddev(#{demo}) as sd_#{demo}" }.join(',')).first
+    DEMOGRAPHICS.inject({}){|m,v| m[v] = ret.send "avg_#{v}"; m}, DEMOGRAPHICS.inject({}){|m,v| m[v] = ret.send "sd_#{v}"; m}
+  end
+  
+  # standard normal distribution, aka Φ
+  def self.std_norm_dist x
+    (1.0 / Math.sqrt(2 * Math::PI)) * Math.exp(-0.5 * (x ** 2))
+  end
 end

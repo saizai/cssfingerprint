@@ -28,22 +28,25 @@ CSSHistory.prep = function() {
 };
 
 CSSHistory.test = function(link) {
-	// document.defaultView is not supported by IE, nor is getComputedStyle. So for IE we use currentStyle instead.
-	// Cf. http://www.quirksmode.org/dom/w3c_html.html http://www.quirksmode.org/dom/w3c_css.html 
-	
 	// Version 2 - modified from AttackAPI
 	if (link.currentStyle) // IE
 	    return link.currentStyle['display'] == 'inline';
     else
 		return document.defaultView.getComputedStyle(link, null).getPropertyValue('display') == 'inline';
-	
-	/*
+};
+
+CSSHistory.test_color = function(link)	{
+	// document.defaultView is not supported by IE, nor is getComputedStyle. So for IE we use currentStyle instead.
+	// Cf. http://www.quirksmode.org/dom/w3c_html.html http://www.quirksmode.org/dom/w3c_css.html 
 	// Version 1 - modified from the original hack
 	if(document.defaultView)
 		return document.defaultView.getComputedStyle(link,null).getPropertyValue("color") == CSSHistory.rgb_color;
 	else // IE
 		return link.currentStyle['color'] == CSSHistory.hex_color;
-	*/
+};
+
+CSSHistory.test_width = function(link)	{
+	return link.offsetWidth > 0 // cross-browser compatible, yay
 };
 
 // When called, this should probably be wrapped in JSON.stringify() for export back up to AJAX
@@ -112,6 +115,8 @@ CSSHistory.check_batch_with = function(urls, method, with_variants) {
 			return CSSHistory.check_batch_jquery_noinsert(urls, with_variants);
 		case 'jquery':
 			return CSSHistory.check_batch_jquery(urls, with_variants);
+		case 'mass_insert_width':
+			return CSSHistory.check_batch_mass_insert_width(urls, with_variants);
 		case 'mass_insert':
 			return CSSHistory.check_batch_mass_insert(urls, with_variants);
 		case 'mass_noinsert':
@@ -215,6 +220,42 @@ CSSHistory.check_batch_mass_insert = function(urls, with_variants){
 	for (i = 0; i < ids_to_check.size(); i++) {
 		link = $(ids_to_check[i]);
 		if (CSSHistory.test(link)) {
+			result[escape(ids_to_check[i].substring(2))] =  true ;
+		}
+	}
+	document.body.removeChild(div);
+	
+	return result
+}
+
+// Insert a batch, but check each link individually, using width to test
+CSSHistory.check_batch_mass_insert_width = function(urls, with_variants){
+	result = {};
+	string_to_insert = '';
+	var div = document.createElement('div');
+	div.className = 'csshistory';
+	var id = hex_md5(String(Math.random() * 50000).replace(/\D/gi, ''));
+	div.id = id;
+	ids_to_check = [];
+	for (i in urls) {
+		result[escape(urls[i])] = false;
+		string_to_insert = string_to_insert + '<a id="' + 'ip' + urls[i] + '" href="http://' + i + '">' + urls[i] + '</a>';
+		ids_to_check.push('ip' + urls[i]);
+		if (with_variants !== false) { // false !== but == undefined
+			string_to_insert = string_to_insert + '<a id="' + 'sp' + urls[i] + '" href="https://' + i + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a id="' + 'iw' + urls[i] + '" href="http://www.' + i + '">' + urls[i] + '</a>';
+			string_to_insert = string_to_insert + '<a id="' + 'sw' + urls[i] + '" href="https://www.' + i + '">' + urls[i] + '</a>';
+			ids_to_check.push('sp' + urls[i]);
+			ids_to_check.push('iw' + urls[i]);
+			ids_to_check.push('sw' + urls[i]);
+		}
+	}
+	div.innerHTML = string_to_insert;
+	document.body.appendChild(div);
+	
+	for (i = 0; i < ids_to_check.size(); i++) {
+		link = $(ids_to_check[i]);
+		if (CSSHistory.test_width(link)) {
 			result[escape(ids_to_check[i].substring(2))] =  true ;
 		}
 	}

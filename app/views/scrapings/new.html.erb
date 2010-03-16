@@ -30,7 +30,7 @@
 			<p>Have you visited before? <%= check_box_tag :repeat_user, '1', !cookies[:remember_token].blank? %></p>
 			<p><b>Optional:</b> Name <%= text_field_tag :name %></p>
 			<p>Do you want to see others' names in your "similar users" list, and let others see yours? <%= check_box_tag :release_name %><br/>
-			<small>You're free to use a nickname. You must consent to have your name released if you want to see others' names in your own similarity list.</small></p>
+			<small>You're free to use a nickname. You must consent to have your name released if you want to see others' names in your own similarity list.<br/>You only need to enter this (and email) once, unless you want to change it.</small></p>
 			<p><b>Optional<i>er</i>:</b> email <%= text_field_tag :email %><br/>
 				<small>I will never give anyone your email; it's only in case I want to contact you.</small></p>
 			<%= hidden_field_tag 'fastest_method' %>

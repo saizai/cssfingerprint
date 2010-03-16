@@ -9,7 +9,7 @@ module Quantcast
     %w(gender age children ethnicity income education).each do |demo|
       img = Magick::Image.read_inline(Base64.encode64(Net::HTTP.get URI.parse("http://www.quantcast.com/profile/demographicGraph?demo=#{ demo }&wunit=wd%3A#{s.url.split('.').reverse.join('.') }"))).first
       
-      return nil if img.columns < 90 # if one isn't right, the others probably aren't also
+      next if img.columns < 90
       
       case demo
       when 'gender':
