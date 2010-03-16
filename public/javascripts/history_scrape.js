@@ -121,6 +121,8 @@ CSSHistory.check_batch_with = function(urls, method, with_variants) {
 			return CSSHistory.check_batch_mass_insert(urls, with_variants);
 		case 'mass_noinsert':
 			return CSSHistory.check_batch_mass_noinsert(urls, with_variants);
+		case 'reuse_noinsert_width': // NOTE: reuse_noinsert appears to crash IE in at least some cases. No idea why yet.
+			return CSSHistory.check_batch_reuse_noinsert_width(urls, with_variants);
 		case 'reuse_noinsert': // NOTE: reuse_noinsert appears to crash IE in at least some cases. No idea why yet.
 			return CSSHistory.check_batch_reuse_noinsert(urls, with_variants);
 		case 'reuse_insert':
@@ -315,6 +317,25 @@ CSSHistory.check_batch_reuse_noinsert = function(urls, with_variants){
 		do { // if with_variants === false, only run this once
 			link.href = CSSHistory.prefixes[j] + i;
 		    found = found || CSSHistory.test(link);
+			j++;
+		} while (!found && (j < CSSHistory.prefixes.length) && (with_variants !== false))
+		
+		result[escape(urls[i])] = found;
+	};
+	return result;
+};
+
+CSSHistory.check_batch_reuse_noinsert_width = function(urls, with_variants){
+	result = {};
+	var link = document.createElement("a");
+	link.className = 'csshistory';
+	for (i in urls) { // i is the URL, urls[i] is the return value (i.e. site id)
+		var found = false;
+		
+		var j = 0
+		do { // if with_variants === false, only run this once
+			link.href = CSSHistory.prefixes[j] + i;
+		    found = found || CSSHistory.test_width(link);
 			j++;
 		} while (!found && (j < CSSHistory.prefixes.length) && (with_variants !== false))
 		
