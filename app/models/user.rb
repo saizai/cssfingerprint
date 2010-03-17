@@ -61,10 +61,23 @@ class User < ActiveRecord::Base
     DEMOGRAPHICS.inject({}){|m,v| ratio = ret.send("#{v}").to_f; m[v] = ratio/(1+ratio); m}
   end
   
+  def demographic_pullers
+    prob = probability_vector nil, true
+    [:asc,:desc].inject({}) do |total, order|
+      total[order] = DEMOGRAPHICS.inject({}) do |m,v|
+        ret = Site.find(:all, :conditions => ["id IN (?) and #{v} > 0", prob.keys],
+         :select => "url, #{v}", :order => "#{v} #{order}", :limit => 5)
+        m[v] = ret.inject({}){|mm,vv| mm[vv.url] = vv.send(v).to_f; mm }
+        m 
+      end
+      total
+    end
+  end
+  
   # Returns avg, sd
   def self.demographics
-    ret = Site.find(:all, :conditions => 'quantcast_rank > 0',
-     :select => DEMOGRAPHICS.map{|demo| "avg(#{demo}) as avg_#{demo}, stddev(#{demo}) as sd_#{demo}" }.join(',')).first
+    ret = Site.find(:first, :conditions => 'quantcast_rank > 0',
+     :select => DEMOGRAPHICS.map{|demo| "avg(#{demo}) as avg_#{demo}, stddev(#{demo}) as sd_#{demo}" }.join(','))
     return DEMOGRAPHICS.inject({}){|m,v| m[v] = ret.send("avg_#{v}").to_f; m}, DEMOGRAPHICS.inject({}){|m,v| m[v] = ret.send("sd_#{v}").to_f; m}
   end
   

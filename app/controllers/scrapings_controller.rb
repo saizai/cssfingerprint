@@ -81,6 +81,7 @@ class ScrapingsController < ApplicationController
         @avg_up = Site.avg_url_probabilities pv.keys
         Workling.return.set @scraping.job_id, "Checking your demographic profile..."
         @demographics = @current_user.demographics
+        @demographic_pullers = @current_user.demographic_pullers
         Workling.return.set @scraping.job_id, "Asking the AI who you are..."
         @similarities = @scraping.identify.sort_by{|k,v| -v} # show in decreasing order
         @other_users = User.find(:all, :conditions => ['id IN (?) and release_name = 1', @similarities.map{|x|x[0]}.sort]).inject({}){|m,u| m[u.id] = u.name;m } if @current_user.release_name
