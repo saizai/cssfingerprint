@@ -157,24 +157,28 @@ namespace :scraping do
       # Technorati: +1-100, 
       # Alexa, Quantcast: +1-100,000,000
       # Bloglines: +1-1000
-      Site.update_all "total_rank = ( 
-          #{GOOGLE_WEIGHT} * IFNULL(google_rank, 0) / 10.0 +
-          #{TECHNORATI_WEIGHT} * (101 - IFNULL(techonrati_rank, 0)) / 100.0 +
-          #{QUANTCAST_WEIGHT} * (1000001 - IFNULL(quantcast_rank, 0)) / 1000000.0 +
-          #{BLOGLINES_WEIGHT} * (1001 - IFNULL(bloglines_rank, 0)) / 1000.0 +
-          #{ALEXA_WEIGHT} * (1000001 - IFNULL(alexa_rank, 0)) / 1000000.0
-        ) /
-        (IF(google_rank IS NULL, 0, #{GOOGLE_WEIGHT}) +
-        IF(techonrati_rank IS NULL, 0, #{TECHNORATI_WEIGHT}) +
-        IF(quantcast_rank IS NULL, 0, #{QUANTCAST_WEIGHT}) +
-        IF(bloglines_rank IS NULL, 0, #{BLOGLINES_WEIGHT}) +
-        IF(alexa_rank IS NULL, 0, #{ALEXA_WEIGHT}))", 
-        # Avoid divide by zero by ensuring there's at least one column non-null
-        "(IF(google_rank IS NULL, 0, 1) +
-          IF(techonrati_rank IS NULL, 0, 1) +
-          IF(quantcast_rank IS NULL, 0, 1) +
-          IF(bloglines_rank IS NULL, 0, 1) +
-          IF(alexa_rank IS NULL, 0, 1)) > 0"
+      Site.find_each do |site|
+        site.update_total_rank!
+      end
+      
+      # Site.update_all "total_rank = ( 
+      #     #{GOOGLE_WEIGHT} * IFNULL(google_rank, 0) / 10.0 +
+      #     #{TECHNORATI_WEIGHT} * (101 - IFNULL(technorati_rank, 0)) / 100.0 +
+      #     #{QUANTCAST_WEIGHT} * (1000001 - IFNULL(quantcast_rank, 0)) / 1000000.0 +
+      #     #{BLOGLINES_WEIGHT} * (1001 - IFNULL(bloglines_rank, 0)) / 1000.0 +
+      #     #{ALEXA_WEIGHT} * (1000001 - IFNULL(alexa_rank, 0)) / 1000000.0
+      #   ) /
+      #   (IF(google_rank IS NULL, 0, #{GOOGLE_WEIGHT}) +
+      #   IF(technorati_rank IS NULL, 0, #{TECHNORATI_WEIGHT}) +
+      #   IF(quantcast_rank IS NULL, 0, #{QUANTCAST_WEIGHT}) +
+      #   IF(bloglines_rank IS NULL, 0, #{BLOGLINES_WEIGHT}) +
+      #   IF(alexa_rank IS NULL, 0, #{ALEXA_WEIGHT}))", 
+      #   # Avoid divide by zero by ensuring there's at least one column non-null
+      #   "(IF(google_rank IS NULL, 0, 1) +
+      #     IF(technorati_rank IS NULL, 0, 1) +
+      #     IF(quantcast_rank IS NULL, 0, 1) +
+      #     IF(bloglines_rank IS NULL, 0, 1) +
+      #     IF(alexa_rank IS NULL, 0, 1)) > 0"
     end
   end
   

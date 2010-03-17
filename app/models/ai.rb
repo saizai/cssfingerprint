@@ -1,7 +1,7 @@
 class AI
   
   def self.regenerate
-    used_sites = Site.find(:all, :conditions => 'avg_visited < 0', :select => 'id').map(&:id).sort
+    used_sites = Site.find(:all, :conditions => 'avg_visited > 0', :select => 'id').map(&:id).sort
     f_all = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_all.txt'), 'w'
     f_train = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_train.txt'), 'w'
     f_test  = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_test.txt'), 'w'
@@ -26,7 +26,7 @@ class AI
     f_test  = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_test.txt'), 'a'
     file = ((rand(2) == 1) ? f_test : f_train)
     scraping = Scraping.find(scraping_id)
-    used_sites = Site.find(:all, :conditions => 'avg_visited < 0', :select => 'id').map(&:id).sort
+    used_sites = Site.find(:all, :conditions => 'avg_visited > 0', :select => 'id').map(&:id).sort
     string = self.get_line_for scraping, used_sites
     file << string
     f_all << string
@@ -46,7 +46,7 @@ class AI
   end
   
   def self.update_model
-    self.make_svm_model 'css_svm_all.txt'
+    model = self.make_model 'css_svm_all.txt'
     model.save(File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_model.txt'))
   end
   

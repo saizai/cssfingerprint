@@ -20,7 +20,7 @@ class ProbabilityVector < ActiveRecord::Base
       new_pvs = [] # [site_id, user_id, tests, hits, avg]
       sites = Site.find(:all, :lock => true, :conditions => ["id in (?)", site_results.keys], :select => "id, visited_users_count, users_count, avg_visited").inject([]) do |m,s|
         visited_now = site_results[s.id]
-        new_avg_visited, new_users_count, new_visited_users_count = -s.avg_visited, s.users_count, s.visited_users_count
+        new_avg_visited, new_users_count, new_visited_users_count = s.avg_visited, s.users_count, s.visited_users_count
         group = if prior_pvs[s.id] # already have a PV, just update it
           pv = prior_pvs[s.id]
           new_pv_hits = (visited_now ? pv.hits + 1 : pv.hits)
@@ -46,7 +46,7 @@ class ProbabilityVector < ActiveRecord::Base
             end
           end
         end
-        m << {:id => s.id, :group => group, :avg_visited => -new_avg_visited, :users_count => new_users_count, :visited_users_count => new_visited_users_count}
+        m << {:id => s.id, :group => group, :avg_visited => new_avg_visited, :users_count => new_users_count, :visited_users_count => new_visited_users_count}
         m
       end
       
@@ -63,7 +63,7 @@ class ProbabilityVector < ActiveRecord::Base
             n = nohit_counts[s[:id]] + 1
             s[:users_count] = n
             s[:visited_users_count] = 1
-            s[:avg_visited] = -1.0 / n
+            s[:avg_visited] = 1.0 / n
           end
         end
       end
