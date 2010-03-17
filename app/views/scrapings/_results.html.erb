@@ -4,46 +4,65 @@
 
 <p>Thanks for participating<%= ", #{@current_user.name}" if @current_user.name %>!</p>
 
-<h3>User similarity</h3>
-
-<p>Note: This section is <b>very</b> experimental and performs poorly so far. It will hopefully be improved considerably soon.</p>
-
-<% if !@current_user.release_name %>
-<p style="color: red;">You chose not to release your name; that's fine. However, this means that you will also not be shown others' names in this user similarity list.</p>
-
-<p>If you want to see them, please run the scraper again with the same code, but entering your name and checking the consent box to share. Please note that you are free to use a nickname;
- I ask just that it be something by which people who actually know you can identify you, and not so generic as to be mistaken for someone else.</p>
-<% end %>
-
-<p>Who the AI thinks you are, in order of probability (out of <%= User.count %> people total):
-<ol>
-<% i = 0; @similarities.sort_by{|k,v| -v}.each do |user_id, prob| 
-next unless i < 10 or user_id == @current_user.id
-%>
-<li value="<%= i + 1 %>">
-	<%= number_to_percentage prob * 100, :precision => 1 %>
-	<%= (@current_user.release_name and @other_users[user_id]) ? @other_users[user_id] : "User ##{user_id}" %></li>	
-</li>
-<% i += 1; end %>
-</ol>
-</p>
-
-<h3>Sites report</h3>
-<% if @sites %>
-	<p><%= @sites.count %> sites found of <%= @scraping.visitations_count %> checked in this scraping.</p>
-<% else %>
-	<p>CSS Fingerprint did not find ANY sites visited out of <%= @scraping.visitations_count %> checked.</p>
-	<p>Given that cssfingerprint.com is one of the ones we tested, and we know you visited this page, that means you're immune to the 	hack!</p>
-	<p>Congratulations.</p>
-<% end %>
-<p>% of the time we've gotten these hits from you vs the average user (this scraping's hits in <span style="color:blue;">blue</span>; former hits & untested URLs in <span s="color:gray;">gray</span>; more significant = more opaque):</p>
-
-<ul class="multi">
-	<% @probabilities.sort.each do |site, prob| 
-		diff = ((@avg_up[site] - prob).abs * 0.7) + 0.3
-		%>
-		<li style="opacity:<%= diff %>;filter:alpha(opacity=<%= diff * 100 %>)"><%= number_to_percentage prob * 100, :precision => 0 %> 
-			vs <%= number_to_percentage @avg_up[site] * 100, :precision => 0 %>
-		<%= link_to site, 'http://' + site, :style => "text-decoration:none; color: #{@sites.include?(site) ? 'blue' : 'gray'}" %></li>
+<div id="similar_users" style="float: left;">
+	<h3>Similar users / User identification</h3>
+	
+	<p>Note: This section is <b>very</b> experimental and performs poorly so far. It will hopefully be improved considerably soon.</p>
+	
+	<% if !@current_user.release_name %>
+	<p style="color: red;">You chose not to release your name; that's fine. However, this means that you will also not be shown others' names in this user similarity list.</p>
+	
+	<p>If you want to see them, please run the scraper again with the same code, but entering your name and checking the consent box to share. Please note that you are free to use a nickname;
+	 I ask just that it be something by which people who actually know you can identify you, and not so generic as to be mistaken for someone else.</p>
 	<% end %>
-</ul>
+	
+	<p>Who the AI thinks you are, in order of probability (out of <%= User.count %> people total):
+	<ol>
+	<% i = 0; @similarities.sort_by{|k,v| -v}.each do |user_id, prob| 
+	next unless i < 10 or user_id == @current_user.id
+	%>
+	<li value="<%= i + 1 %>">
+		<%= number_to_percentage prob * 100, :precision => 1 %>
+		<%= (@current_user.release_name and @other_users[user_id]) ? @other_users[user_id] : "User ##{user_id}" %></li>	
+	</li>
+	<% i += 1; end %>
+	</ol>
+	</p>
+</div>
+
+<div id="demographics" style="float: left;">
+	<h3>Demographic profile</h3>
+	
+	<p>Based on your visits to Quantcast-rated sites, you are probably:</p>
+	
+	<ul>
+		<% DEMOGRAPHIC_NAMES.each do |k,v| %>
+			<li><%= v %>: <%= @demographics[k] %></li>
+		<% end %>
+	</ul>
+	
+	<p style="font-size:small;">It's possible that the totals do not add up to 1; if for instance you visit one site that is targeted at Asians and another that is targeted at Hispanics, your
+		probability for both goes up.</p>
+</div>
+
+<div id="sites_report"  style="float: left;">
+	<h3>Sites report</h3>
+	<% if @sites %>
+		<p><%= @sites.count %> sites found of <%= @scraping.visitations_count %> checked in this scraping.</p>
+	<% else %>
+		<p>CSS Fingerprint did not find ANY sites visited out of <%= @scraping.visitations_count %> checked.</p>
+		<p>Given that cssfingerprint.com is one of the ones we tested, and we know you visited this page, that means you're immune to the 	hack!</p>
+		<p>Congratulations.</p>
+	<% end %>
+	<p>% of the time we've gotten these hits from you vs the average user (this scraping's hits in <span style="color:blue;">blue</span>; former hits & untested URLs in <span s="color:gray;">gray</span>; more significant = more opaque):</p>
+	
+	<ul class="multi">
+		<% @probabilities.sort.each do |site, prob| 
+			diff = ((@avg_up[site] - prob).abs * 0.7) + 0.3
+			%>
+			<li style="opacity:<%= diff %>;filter:alpha(opacity=<%= diff * 100 %>)"><%= number_to_percentage prob * 100, :precision => 0 %> 
+				vs <%= number_to_percentage @avg_up[site] * 100, :precision => 0 %>
+			<%= link_to site, 'http://' + site, :style => "text-decoration:none; color: #{@sites.include?(site) ? 'blue' : 'gray'}" %></li>
+		<% end %>
+	</ul>
+</div>
