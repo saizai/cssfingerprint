@@ -50,11 +50,24 @@
 	
 	<p>All graphs use only non-bogus combinations with >10 samples, and exclude mobile browsers, as they're 10x slower and distort the graph.</p>
 	
-	<p>Hue = method; luminosity = browser. Colors are consistent throughout.
-		Method names are documented in the <A href="http://github.com/saizai/cssfingerprint/blob/master/public/javascripts/history_scrape.js">Javascript source</A>.</p>
+	<p>Method names are documented in the <A href="http://github.com/saizai/cssfingerprint/blob/master/public/javascripts/history_scrape.js">Javascript source</A>.</p>
 	
 	<p>I've deleted all timing data from before I started checking batches in increments of 50, which is why some uncommon browsers' data is missing. Please keep hitting the main page 
 		with all your browsers and it'll be nice and smooth.</p>
+		
+	<p>Hue = method; luminosity = browser. Colors are consistent throughout:
+		<table>
+			<tr><td/><%= @used_methods.map{|m| "<th>#{m}</th>" }.join %></tr>
+			<% @used_agents.each do |agent| %>
+				<tr>
+					<th><%= agent %></th>
+					<% @used_methods.each do |method| %>
+						<td style="background: <%= BrowserTest.color_for method, agent %>">&nbsp;&nbsp;&nbsp;</td>
+					<% end %>
+				</tr>
+			<% end %>
+		</table>
+	</p>
 	
 	<div>
 		<p>Effect of batch size on local scraping efficency<br/>
@@ -117,6 +130,7 @@
 		<li>Alex Fink - better processing algorithms and response UI</li>
 		<li>Jeremiah Grossman - writing the original CSS History Hack!</li>
 		<li>Dan Kaminsky - suggestion to use IFRAMEs for multithreading</li>
+		<li>Michiel Nolet - <a href="http://www.mikeonads.com/2008/07/13/using-your-browser-url-history-estimate-gender/">inspiration</a> for the improved demographics checker</li>
 		<li>Leif Ryge - suggestions for better input and response UI</li>
 		<li>Mike Shaver - the 'grab rendered text' <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=147777#c49">idea</a></li>
 	</ul>

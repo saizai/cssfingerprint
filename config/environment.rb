@@ -60,10 +60,6 @@ THREADS = 4 # client scraping threads to run
 
 METHODS = %w(jquery jquery_noinsert reuse_noinsert reuse_insert reuse_reinsert full_reinsert mass_insert mass_noinsert mass_insert_width reuse_noinsert_width full_reinsert_width).sort
 USER_AGENTS = %w( Explorer OmniWeb Opera Safari iCab Konqueror Firefox Camino Netscape Mozilla Chrome Unknown ).sort
-i = 0
-HUES = METHODS.inject({}){|m, method| m[method] = (0 + (i * 1.0 / METHODS.count)) % 1.0; i += 1; m } # 0 = base hue
-i = 0
-LUMINOSITIES = USER_AGENTS.inject({}){|m, method| m[method] = (i * 0.5 / (USER_AGENTS.count - 1)) + 0.25; i += 1; m }
 
 WORKLING_CLIENT = Workling::Clients::MemcacheQueueClient.new
 WORKLING_CLIENT.connect

@@ -54,10 +54,10 @@ class BrowserTest < ActiveRecord::Base
                   "&chxl=1:|batch size|2:|#{sd_markers.map{|x| x.to_s + ' σ'}.join('|') }|3:|z-score" # chxr |2,#{ymin},#{ymax},1
     
     # Legend
-    google_url += "&chdl=" + grouped_results.map{|k,v| k}.join('|')
+    # google_url += "&chdl=" + grouped_results.map{|k,v| k}.join('|')
     
     # colors
-    google_url += "&chco=" + grouped_results.map{|k,v| Color::HSL.from_fraction(HUES[v[0][:method]], 1, LUMINOSITIES[v[0][:browser]]).html[1..-1] }.join(',')
+    google_url += "&chco=" + grouped_results.map{|k,v| self.color_for(v[0][:method], v[0][:browser])[1..-1] }.join(',')
     
     return google_url
   end
@@ -120,10 +120,32 @@ class BrowserTest < ActiveRecord::Base
     # + "|v,999999,#{ browsers.count },,1,0,sl:15:10" # vertical ticks between bar groups 
     
     # colors
-    google_url += "&chco=" + grouped_results.map{|k,v| v.map{|y| Color::HSL.from_fraction(HUES[y[:method]], 1, LUMINOSITIES[y[:browser]]).html[1..-1]}.join('|') }.join(',')
+    google_url += "&chco=" + grouped_results.map{|k,v| v.map{|y| self.color_for(y[:method], y[:browser])[1..-1]}.join('|') }.join(',')
     
     return google_url
     
+  end
+  
+  def self.used_agents
+    self.find(:first, :select => "group_concat(distinct browser) as browsers").browsers.split(',').sort
+  end
+  
+  def self.used_methods
+    BrowserTest.find(:first, :select => "group_concat(distinct method) as xmethods", :conditions => 'bogus = 0').xmethods.split(',').sort
+  end
+  
+  def self.hues
+    i = 0
+    used_methods.inject({}){|m, method| m[method] = (0 + (i * 1.0 / used_methods.count)) % 1.0; i += 1; m } # 0 = base hue
+  end
+  
+  def self.luminosities
+    i = 0
+    used_agents.inject({}){|m, method| m[method] = (i * 0.5 / (used_agents.count - 1)) + 0.25; i += 1; m }
+  end
+  
+  def self.color_for method, agent
+    Color::HSL.from_fraction(self.hues[method], 1, self.luminosities[agent]).html
   end
   
   
