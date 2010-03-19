@@ -11,18 +11,19 @@ class User < ActiveRecord::Base
   
   before_validation :wipe_blanks
   
-  DEMOGRAPHICS = %w(males 
-               age3_12 age13_17 age18_34 age35_49 age50plus 
-               eth_african eth_asian eth_caucasian eth_hispanic 
-               kids_0_17 kids_0_2 kids_3_12 kids_13_17 
-               college college_grad 
-               income_0_30 income_30_60 income_60_100 income_100_plus).map(&:to_sym)
+  DEMOGRAPHIC_GROUPS = [[:females, :males],
+                        [:age3_12, :age13_17, :age18_34, :age35_49, :age50plus], 
+                        [:eth_african, :eth_asian, :eth_caucasian, :eth_hispanic, :eth_other],
+                        [:kids_0_17, :kids_0_2, :kids_3_12, :kids_13_17], 
+                        [:college_none, :college, :college_grad], 
+                        [:income_0_30, :income_30_60, :income_60_100, :income_100_plus]]
+  DEMOGRAPHICS = DEMOGRAPHIC_GROUPS.flatten
   
   # This array is index-coordinated w/ the above one
-  FRIENDLY_NAMES = ["Male", "Age 3-12", "Age 13-17", "Age 18-34", "Age 35-49", "Age 50+",
-                    "Ethnicity: African", "Ethnicity: Asian", "Ethnicity: Caucasian", "Ethnicity: Hispanic",
+  FRIENDLY_NAMES = ["Female", "Male", "Age 3-12", "Age 13-17", "Age 18-34", "Age 35-49", "Age 50+",
+                    "Ethnicity: African", "Ethnicity: Asian", "Ethnicity: Caucasian", "Ethnicity: Hispanic", "Ethnicity: Other",
                     "Has kids age 0-17", "Has kids age 0-2", "Has kids age 3-12", "Has kids age 13-17",
-                    "Attended college", "Attended graduate school", 
+                    "Attended no college", "Attended college", "Attended graduate school", 
                     "Income $0-$30k/yr", "Income $30-60k/yr", "Income $60-100k/yr", "Income $100k+"]
   DEMOGRAPHIC_NAMES = DEMOGRAPHICS.inject({}){|m,x| m[x] = FRIENDLY_NAMES[DEMOGRAPHICS.index(x)]; m }
   
@@ -54,11 +55,17 @@ class User < ActiveRecord::Base
     prob = probability_vector nil, true
     avgs, sds = User.demographics
     
+    
     ret = Site.find(:first, :conditions => ['id IN (?) and quantcast_rank > 0', prob.keys],
      :select => DEMOGRAPHICS.map{|demo| "#{avgs[demo] / (1-avgs[demo]) } * exp(sum(ln( \ 
           (#{demo}/(1 - #{demo})) / #{avgs[demo] / (1-avgs[demo])} \ 
         ))) as #{demo}"}.join(','), :group => nil)
-    DEMOGRAPHICS.inject({}){|m,v| ratio = ret.send("#{v}").to_f; m[v] = ratio/(1+ratio); m}
+    unbaselined = DEMOGRAPHICS.inject({}){|m,v| ratio = ret.send("#{v}").to_f; m[v] = ratio/(1+ratio); m}
+    
+    DEMOGRAPHIC_GROUPS.each do |group|
+      total = group.map{|demo| unbaselined[demo] }.sum
+      group.map{|demo| unbaselined[demo] /= total }
+    end
   end
   
   def demographic_pullers

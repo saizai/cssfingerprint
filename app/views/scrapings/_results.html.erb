@@ -43,7 +43,7 @@
 				<td><%= name %></td>
 				<td><%= number_to_percentage @demographics[demo] * 100, :precision => 0 %></td>
 				<td><ul class="multi"><%= @demographic_pullers[:desc][demo].sort_by{|k,v| -v}.map{|k,v| "<li>#{k}: #{number_to_percentage v * 100, :precision => 0}</li>"}.join %></ul></td>
-				<td><ul class="multi"><%= @demographic_pullers[:asc][demo].sort_by{|k,v| v}.map{|k,v| "<li>#{k}: #{number_to_percentage v * 100, :precision => 0}</li>"}.join(', ') %></ul></td>
+				<td><ul class="multi"><%= @demographic_pullers[:asc][demo].sort_by{|k,v| v}.map{|k,v| "<li>#{k}: #{number_to_percentage v * 100, :precision => 0}</li>"}.join %></ul></td>
 			</tr>
 		<% end %>
 	</table>

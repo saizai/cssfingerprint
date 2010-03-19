@@ -15,14 +15,15 @@ module Quantcast
       when 'gender':
         male, female = bar_graph_set img, 0..1
         s.males = male.to_f / (male + female)
+        s.females = female.to_f / (male + female)
       when 'age':
         a3_12, a13_17, a18_34, a35_49, a50 = bar_graph_set img, 0..4
         total = [a3_12, a13_17, a18_34, a35_49, a50].sum
         s.age3_12, s.age13_17, s.age18_34, s.age35_49, s.age50plus = [a3_12,a13_17,a18_34,a35_49,a50].map{|x| x.to_f / total}
       when 'ethnicity':
-        caucasian, african, asian, hispanic = bar_graph_set img, 0..4
-        total = [caucasian, african, asian, hispanic].sum
-        s.eth_caucasian, s.eth_african, s.eth_asian, s.eth_hispanic = [caucasian, african, asian, hispanic].map{|x| x.to_f / total}
+        caucasian, african, asian, hispanic, other = bar_graph_set img, 0..4
+        total = [caucasian, african, asian, hispanic, other].sum
+        s.eth_caucasian, s.eth_african, s.eth_asian, s.eth_hispanic, s.eth_other = [caucasian, african, asian, hispanic, other].map{|x| x.to_f / total}
       when 'children':
         nokids_0_17, yeskids_0_17, nokids_0_2, yeskids_0_2, nokids_3_12, yeskids_3_12, nokids_13_17, yeskids_13_17 = bar_graph_set img, [0,1,3,4,6,7,9,10]
         s.kids_0_17 = yeskids_0_17.to_f / (yeskids_0_17 + nokids_0_17)
@@ -32,7 +33,7 @@ module Quantcast
       when 'education':
         no_college, college, grad = bar_graph_set img, 0..2
         total = [no_college, college, grad].sum
-        s.college, s.college_grad = [college, grad].map{|x| x.to_f / total}
+        s.college_none, s.college, s.college_grad = [no_college, college, grad].map{|x| x.to_f / total}
       when 'income':
         inc_0_30, inc_30_60, inc_60_100, inc_100 = bar_graph_set img, 0..3
         total = [inc_0_30, inc_30_60, inc_60_100, inc_100].sum
