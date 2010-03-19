@@ -61,11 +61,12 @@ class User < ActiveRecord::Base
           (#{demo}/(1 - #{demo})) / #{avgs[demo] / (1-avgs[demo])} \ 
         ))) as #{demo}"}.join(','), :group => nil)
     unbaselined = DEMOGRAPHICS.inject({}){|m,v| ratio = ret.send("#{v}").to_f; m[v] = ratio/(1+ratio); m}
-    
+    baselined = {}
     DEMOGRAPHIC_GROUPS.each do |group|
       total = group.map{|demo| unbaselined[demo] }.sum
-      group.map{|demo| unbaselined[demo] /= total }
+      group.map{|demo| baselined[demo] = unbaselined[demo] / total }
     end
+    baselined
   end
   
   def demographic_pullers
