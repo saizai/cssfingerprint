@@ -37,7 +37,7 @@
 	
 	<table>
 		<tr><th>Demographic</th><th>Probability</th><th>High sites</th><th>Low sites</th></tr>
-		<% User::DEMOGRAPHICS.each do |demo|
+		<% User::DISPLAY_DEMOGRAPHICS.each do |demo|
 			name = User::DEMOGRAPHIC_NAMES[demo] %>
 			<tr>
 				<td><%= name %></td>

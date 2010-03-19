@@ -19,6 +19,7 @@ class User < ActiveRecord::Base
                         [:income_0_30, :income_30_60, :income_60_100, :income_100_plus]]
   DEMOGRAPHICS = DEMOGRAPHIC_GROUPS.flatten
   REDUNDANT_DEMOGRAPHICS = [:females, :eth_other, :no_kids_0_17, :no_kids_0_2, :no_kids_3_12, :no_kids_3_17, :college_none]
+  DISPLAY_DEMOGRAPHICS = DEMOGRAPHICS - REDUNDANT_DEMOGRAPHICS
   
   # This array is index-coordinated w/ the above one
   FRIENDLY_NAMES = ["Female", "Male", "Age 3-12", "Age 13-17", "Age 18-34", "Age 35-49", "Age 50+",
@@ -73,7 +74,7 @@ class User < ActiveRecord::Base
   def demographic_pullers
     prob = probability_vector nil, true
     [:asc,:desc].inject({}) do |total, order|
-      total[order] = (DEMOGRAPHICS - REDUNDANT_DEMOGRAPHICS).inject({}) do |m,v|
+      total[order] = DISPLAY_DEMOGRAPHICS.inject({}) do |m,v|
         ret = Site.find(:all, :conditions => ["id IN (?) and #{v} > 0", prob.keys],
          :select => "url, #{v}", :order => "#{v} #{order}", :limit => 5)
         m[v] = ret.inject({}){|mm,vv| mm[vv.url] = vv.send(v).to_f; mm }
