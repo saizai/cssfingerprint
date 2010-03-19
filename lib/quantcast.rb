@@ -7,9 +7,12 @@ module Quantcast
   def update_demographics_for site
     s = site # just shorthand
     %w(gender age children ethnicity income education).each do |demo|
-      img = Magick::Image.read_inline(Base64.encode64(Net::HTTP.get URI.parse("http://www.quantcast.com/profile/demographicGraph?demo=#{ demo }&wunit=wd%3A#{s.url.split('.').reverse.join('.') }"))).first
-      
-      next if img.columns < 90
+      begin
+        img = Magick::Image.read_inline(Base64.encode64(Net::HTTP.get URI.parse("http://www.quantcast.com/profile/demographicGraph?demo=#{ demo }&wunit=wd%3A#{s.url.split('.').reverse.join('.') }"))).first
+        next if img.columns < 90
+      rescue
+        next
+      end
       
       case demo
       when 'gender':

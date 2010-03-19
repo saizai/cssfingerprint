@@ -7,13 +7,12 @@
 <div id="similar_users" style="float: left;">
 	<h3>Similar users / User identification</h3>
 	
-	<p>Note: This section is <b>very</b> experimental and performs poorly so far. It will hopefully be improved considerably soon.</p>
-	
 	<% if !@current_user.release_name %>
 	<p style="color: red;">You chose not to release your name; that's fine. However, this means that you will also not be shown others' names in this user similarity list.</p>
 	
 	<p>If you want to see them, please run the scraper again with the same code, but entering your name and checking the consent box to share. Please note that you are free to use a nickname;
-	 I ask just that it be something by which people who actually know you can identify you, and not so generic as to be mistaken for someone else.</p>
+	 I ask just that it be something by which people who actually know you can identify you, and not so generic as to be mistaken for someone else.<br/>
+	 You only need to enter your name once.</p>
 	<% end %>
 	
 	<p>Who the AI thinks you are, in order of probability (out of <%= User.count %> people total):
@@ -32,6 +31,8 @@
 
 <div id="demographics" style="float: left;">
 	<h3>Demographic profile</h3>
+	
+	<p style="color:red;">Demographic profiling is <b>very</b> experimental right now, and full site demographic data is still being collected. Come back later for better results.</p>
 	
 	<p>Based on your visits to Quantcast-rated sites, you are probably:</p>
 	
