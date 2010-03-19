@@ -11,7 +11,7 @@ class User < ActiveRecord::Base
   
   before_validation :wipe_blanks
   
-  DEMOGRAPHIC_GROUPS = [[:females, :males],
+  DEMOGRAPHIC_GROUPS = [[:females, :males], # Each group should add up to probability = 1
                         [:age3_12, :age13_17, :age18_34, :age35_49, :age50plus], 
                         [:eth_african, :eth_asian, :eth_caucasian, :eth_hispanic, :eth_other],
                         [:kids_0_17, :no_kids_0_17], [:kids_0_2, :no_kids_0_2], [:kids_3_12, :no_kids_3_12], [:kids_13_17, :no_kids_13_17], 
@@ -23,9 +23,9 @@ class User < ActiveRecord::Base
   # This array is index-coordinated w/ the above one
   FRIENDLY_NAMES = ["Female", "Male", "Age 3-12", "Age 13-17", "Age 18-34", "Age 35-49", "Age 50+",
                     "Ethnicity: African", "Ethnicity: Asian", "Ethnicity: Caucasian", "Ethnicity: Hispanic", "Ethnicity: Other",
-                    "Has kids age 0-17", "Has kids age 0-2", "Has kids age 3-12", "Has kids age 13-17",
+                    "Has kids age 0-17", "Has no kids age 0-17", "Has kids age 0-2", "Has no kids age 0-2", "Has kids age 3-12", "Has no kids age 3-12", "Has kids age 13-17", "Has no kids age 13-17",
                     "Attended no college", "Attended college", "Attended graduate school", 
-                    "Income $0-$30k/yr", "Income $30-60k/yr", "Income $60-100k/yr", "Income $100k+"]
+                    "Income $0-$30k/yr", "Income $30-60k/yr", "Income $60-100k/yr", "Income $100k+/yr"]
   DEMOGRAPHIC_NAMES = DEMOGRAPHICS.inject({}){|m,x| m[x] = FRIENDLY_NAMES[DEMOGRAPHICS.index(x)]; m }
   
   def wipe_blanks
