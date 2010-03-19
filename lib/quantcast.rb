@@ -27,9 +27,13 @@ module Quantcast
       when 'children':
         nokids_0_17, yeskids_0_17, nokids_0_2, yeskids_0_2, nokids_3_12, yeskids_3_12, nokids_13_17, yeskids_13_17 = bar_graph_set img, [0,1,3,4,6,7,9,10]
         s.kids_0_17 = yeskids_0_17.to_f / (yeskids_0_17 + nokids_0_17)
+        s.no_kids_0_17 = nokids_0_17.to_f / (yeskids_0_17 + nokids_0_17)
         s.kids_0_2 = yeskids_0_2.to_f / (yeskids_0_2 + nokids_0_2)
+        s.no_kids_0_2 = nokids_0_2.to_f / (yeskids_0_2 + nokids_0_2)
         s.kids_3_12 = yeskids_3_12.to_f / (yeskids_3_12 + nokids_3_12)
+        s.no_kids_3_12 = nokids_3_12.to_f / (yeskids_3_12 + nokids_3_12)
         s.kids_13_17 = yeskids_13_17.to_f / (yeskids_13_17 + nokids_13_17)
+        s.nokids_13_17 = nokids_13_17.to_f / (yeskids_13_17 + nokids_13_17)
       when 'education':
         no_college, college, grad = bar_graph_set img, 0..2
         total = [no_college, college, grad].sum
