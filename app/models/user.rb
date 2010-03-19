@@ -18,7 +18,7 @@ class User < ActiveRecord::Base
                         [:college_none, :college, :college_grad], 
                         [:income_0_30, :income_30_60, :income_60_100, :income_100_plus]]
   DEMOGRAPHICS = DEMOGRAPHIC_GROUPS.flatten
-  REDUNDANT_DEMOGRAPHICS = [:females, :eth_other, :no_kids_0_17, :no_kids_0_2, :no_kids_3_12, :no_kids_3_17, :college_none]
+  REDUNDANT_DEMOGRAPHICS = [:females, :eth_other, :no_kids_0_17, :no_kids_0_2, :no_kids_3_12, :no_kids_13_17, :college_none]
   DISPLAY_DEMOGRAPHICS = DEMOGRAPHICS - REDUNDANT_DEMOGRAPHICS
   
   # This array is index-coordinated w/ the above one

@@ -69,8 +69,8 @@ class ScrapingsController < ApplicationController
         head :not_modified
       elsif result.is_a? String
         render :update do |page|
-          page['scrapers'].remove
           page['status'].replace_html result
+          page['scrapers'].remove
         end
       elsif result.is_a? Hash
         result.each{|var,val| instance_variable_set "@#{var}".to_sym, val }
