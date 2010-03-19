@@ -26,7 +26,7 @@ class AI
     f_test  = File.open File.join(RAILS_ROOT, 'db', 'ai', 'css_svm_test.txt'), 'a'
     file = ((rand(2) == 1) ? f_test : f_train)
     scraping = Scraping.find(scraping_id)
-    used_sites = Site.find(:all, :conditions => 'avg_visited > 0', :select => 'id').map(&:id).sort
+    used_sites = Site.find(:all, :conditions => 'avg_visited > 0', :select => 'group_concat(id) as ids').ids.split(',').sort
     string = self.get_line_for scraping, used_sites
     file << string
     f_all << string
@@ -39,7 +39,7 @@ class AI
   
   def self.get_line_for scraping, used_sites
     string = "#{scraping.user_id} "
-    scraping.visitations.find(:all, :conditions => ['site_id IN (?)', used_sites], :order => 'site_id').each do |visitation|
+    scraping.visitations.find(:all, :conditions => ['site_id IN (?)', used_sites], :order => 'site_id', :select => 'site_id, visited').each do |visitation|
       string += "#{visitation.site_id}:#{(visitation.visited ? 1 : 0).to_f} "
     end
     string += "\n"
