@@ -9,7 +9,7 @@ class ScrapingWorker < Workling::Base
   
   def update_probability_vectors options
     scraping = Scraping.find(options[:scraping_id])
-    results = scraping.visitations.find(:all, :conditions => ['site_id IN (?)', used_sites], :order => 'site_id').inject({}){|m,v| m[v.site_id] = v}
+    results = scraping.visitations.find(:all, :conditions => ['site_id IN (?)', used_sites], :order => 'site_id', :select => 'site_id, visited').inject({}){|m,v| m[v.site_id] = v.visited}
     ProbabilityVector.report scraping.user_id, results
   end
   

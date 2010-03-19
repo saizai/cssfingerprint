@@ -41,12 +41,12 @@ class User < ActiveRecord::Base
       conditions[0] += ' AND hits > 0'
     end
     
-    probability_vectors.find(:all, :conditions => conditions).inject({}){|m,x| m[x.site_id] = x.avg; m}
+    probability_vectors.find(:all, :conditions => conditions, :select => 'site_id, avg').inject({}){|m,x| m[x.site_id] = x.avg; m}
   end
   
   def url_probabilities prob = nil
     prob ||= probability_vector
-    Site.find(:all, :conditions => ['id IN (?)', prob.keys]).inject({}){|m,x| m[x.url] = prob[x.id]; m }
+    Site.find(:all, :conditions => ['id IN (?)', prob.keys], :select => "id, url").inject({}){|m,x| m[x.url] = prob[x.id]; m }
   end
   
   # Average the demographics of all sites this user has visited

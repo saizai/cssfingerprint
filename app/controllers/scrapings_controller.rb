@@ -69,8 +69,10 @@ class ScrapingsController < ApplicationController
         head :ok
       elsif result == 'done'
         Workling.return.set @scraping.job_id, "Calculating results... 1/5"
-        @sites = @scraping.found_sites.find(:all, :select => :url).map(&:url)
-        Workling.return.set @scraping.job_id, "Calculating results... 2/5"
+        # Should be somewhat better on RAM, as it requires instantiating fewer objects
+        @sites = @scraping.found_sites.find(:first, :select => "group_concat(url) as urls").urls.split(',')
+#        @sites = @scraping.found_sites.find(:all, :select => :url).map(&:url)
+#        Workling.return.set @scraping.job_id, "Calculating results... 2/5"
 # TODO: Come up with a more efficient solution. For now, loading all the unfound sites into memory is just way too expensive.
 #        @unfound_sites = @scraping.unfound_sites.find(:all, :select => :url).map(&:url)
         Workling.return.set @scraping.job_id, "Calculating results... 3/5"
@@ -84,7 +86,7 @@ class ScrapingsController < ApplicationController
         @demographic_pullers = @current_user.demographic_pullers
         Workling.return.set @scraping.job_id, "Asking the AI who you are..."
         @similarities = @scraping.identify.sort_by{|k,v| -v} # show in decreasing order
-        @other_users = User.find(:all, :conditions => ['id IN (?) and release_name = 1', @similarities.map{|x|x[0]}.sort]).inject({}){|m,u| m[u.id] = u.name;m } if @current_user.release_name
+        @other_users = User.find(:all, :conditions => ['id IN (?) and release_name = 1', @similarities.map{|x|x[0]}.sort], :select => 'id, name').inject({}){|m,u| m[u.id] = u.name;m } if @current_user.release_name
         ScrapingWorker.asynch_update_svm :scraping_id => @scraping.id
         
         render :update do |page|

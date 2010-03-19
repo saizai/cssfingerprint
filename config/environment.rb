@@ -26,6 +26,7 @@ Rails::Initializer.run do |config|
   config.gem 'color-tools', :lib => 'color', :source => 'http://gems.github.com'
   config.gem 'tomz-libsvm-ruby-swig', :lib => 'svm', :source => 'http://gems.github.com'
   config.gem 'scrubyt'
+  config.gem 'newrelic_rpm'
   
   # Only load the plugins named here, in the order given (default is alphabetical).
   # :all can be used as a placeholder for all plugins not explicitly named
