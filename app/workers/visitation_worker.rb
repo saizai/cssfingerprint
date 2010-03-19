@@ -25,9 +25,7 @@ class VisitationWorker < Workling::Base
     # FIXME: why are they getting lost? Why are some threads not finishing?
     if scraping.created_at < 60.seconds.ago  and scraping.served_urls <= scraping.visitations_count + scraping.batch_size * THREADS and !scraping.job_id
       ScrapingWorker.asynch_version_sites_once_idle!
-#      ScrapingWorker.asynch_update_probability_vectors :scraping_id => scraping_id
-      Workling.return.set options[:uid], "done"
-      scraping.update_attribute :job_id, options[:uid] # ScrapingWorker.asynch_process_results(:scraping_id => scraping_id)
+      ScrapingWorker.asynch_analyze_results :scraping_id => scraping_id
     end
     
     BG_LOGGER.debug "#{Time.now.to_s}: #{options[:uid]}: Processed scraping #{scraping_id} offset #{results.keys.min}; found #{found_count} / #{results.size}: #{found_site_ids.join(', ')}"
