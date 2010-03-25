@@ -57,7 +57,7 @@ namespace :scraping do
     with_lock do
       g = Google::PageRank.new(nil)
       
-      Site.find_each :conditions => "google_rank IS NOT NULL" do |s|
+      Site.find_each :conditions => "google_rank IS NULL" do |s|
         s.update_attribute :google_rank, g.page_rank(s.url)
       end
     end

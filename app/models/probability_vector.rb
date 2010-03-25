@@ -34,7 +34,7 @@ class ProbabilityVector < ActiveRecord::Base
             new_avg_visited = (new_avg_visited * (new_users_count - 1) / new_users_count) + ((visited_now ? 1 : 0).to_f / new_users_count)
             new_visited_users_count += 1 if visited_now
             new_users_count += 1
-            new_pvs << [s.id, user_id, 1, (visited_now ? 1 : 0), 1.0]
+            new_pvs << [s.id, user_id, 1, (visited_now ? 1 : 0), (visited_now ? 1 : 0).to_f]
             :new_existing
           else
             if visited_now # lazy-add the other users' PVs 

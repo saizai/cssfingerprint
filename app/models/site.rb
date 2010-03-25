@@ -56,24 +56,24 @@ class Site < ActiveRecord::Base
   
   def new_total_rank
     total, weights = 0, 0
-    if site.google_rank
-      total += GOOGLE_WEIGHT * (site.google_rank / 10.0) 
+    if google_rank
+      total += GOOGLE_WEIGHT * (google_rank / 10.0) 
       weights += GOOGLE_WEIGHT
     end
-    if site.technorati_rank
-      total += TECHNORATI_WEIGHT * (101 - site.technorati_rank) / 100.0 
+    if technorati_rank
+      total += TECHNORATI_WEIGHT * (101 - technorati_rank) / 100.0 
       weights += TECHNORATI_WEIGHT
     end
-    if site.quantcast_rank
-      total += QUANTCAST_WEIGHT * (1000001 - site.quantcast_rank) / 1000000.0
+    if quantcast_rank
+      total += QUANTCAST_WEIGHT * (1000001 - quantcast_rank) / 1000000.0
       weights += QUANTCAST_WEIGHT
     end
-    if site.bloglines_rank
-      total += BLOGLINES_WEIGHT * (1001 - site.bloglines_rank) / 1000.0
+    if bloglines_rank
+      total += BLOGLINES_WEIGHT * (1001 - bloglines_rank) / 1000.0
       weights += BLOGLINES_WEIGHT
     end
-    if site.alexa_rank
-      total += ALEXA_WEIGHT * (1000001 - site.alexa_rank) / 1000000.0
+    if alexa_rank
+      total += ALEXA_WEIGHT * (1000001 - alexa_rank) / 1000000.0
       weights += ALEXA_WEIGHT
     end
     weights > 0 ? total / weights : nil
